@@ -1,0 +1,231 @@
+# ---------------------------------------------------------------------------
+!if !$d(BCB)
+BCB = $(MAKEDIR)\..
+!endif
+
+# ---------------------------------------------------------------------------
+# IDE SECTION
+# ---------------------------------------------------------------------------
+# The following section of the project makefile is managed by the BCB IDE.
+# It is recommended to use the IDE to change any of the values in this
+# section.
+# ---------------------------------------------------------------------------
+
+VERSION = BCB.04.04
+# ---------------------------------------------------------------------------
+PROJECT = Colorize.exe
+OBJFILES = OBJ\MyCheckLst.obj OBJ\Colorize.obj OBJ\Main.obj OBJ\DlgWingEdit.obj \
+  OBJ\DlgMonkey.obj OBJ\DlgPlay.obj OBJ\DlgSmiley.obj OBJ\DlgColor.obj \
+  OBJ\DlgBlend.obj OBJ\DlgWebExport.obj OBJ\DlgFontType.obj OBJ\DlgAbout.obj \
+  OBJ\DlgLicense.obj OBJ\DlgStrip.obj OBJ\DlgIncDec.obj OBJ\DlgAlternate.obj \
+  OBJ\DlgSetColors.obj OBJ\DlgMorph.obj OBJ\DlgReplaceText.obj \
+  OBJ\DlgSpellCheck.obj OBJ\DlgShowDict.obj OBJ\DlgChooseDict.obj \
+  OBJ\DlgFontSize.obj OBJ\FormSFDlg.obj OBJ\FormOFSSDlg.obj OBJ\TaePreviewFrm.obj \
+  OBJ\ConvertToIRC.obj OBJ\Effects.obj OBJ\DefaultStrings.obj OBJ\Blender.obj \
+  OBJ\Optimizer.obj OBJ\Playback.obj OBJ\ThreadOnChange.obj OBJ\ConvertToHLT.obj \
+  OBJ\ConvertToYahoo.obj OBJ\Pushstruct.obj OBJ\Utils.obj OBJ\Paltalk.obj \
+  OBJ\PaltalkClass.obj OBJ\Play.obj OBJ\ConvertToRTF.obj OBJ\PASTESTRUCT.obj \
+  OBJ\Undo.obj OBJ\ConvertToHTML.obj OBJ\ConvertFromHTML.obj OBJ\StringsW.obj \
+  OBJ\VerInfo.obj OBJ\PrintPreview.obj OBJ\DlgUnderline.obj OBJ\DlgFavColors.obj \
+  OBJ\DlgFgBgColors.obj
+RESFILES = Colorize.res OBJ\Colorize.res
+RESDEPEN = $(RESFILES) Main.dfm DlgWingEdit.dfm DlgMonkey.dfm DlgPlay.dfm DlgSmiley.dfm \
+  DlgColor.dfm DlgBlend.dfm DlgWebExport.dfm DlgFontType.dfm DlgAbout.dfm \
+  DlgLicense.dfm DlgStrip.dfm DlgIncDec.dfm DlgAlternate.dfm DlgSetColors.dfm \
+  DlgMorph.dfm DlgReplaceText.dfm DlgSpellCheck.dfm DlgShowDict.dfm \
+  DlgChooseDict.dfm DlgFontSize.dfm FormSFDlg.dfm FormOFSSDlg.dfm \
+  TaePreviewFrm.dfm DlgUnderline.dfm DlgFavColors.dfm DlgFgBgColors.dfm
+LIBFILES =
+LIBRARIES = tee40.lib teedb40.lib teeui40.lib vcldbx40.lib qrpt40.lib bcbsmp40.lib \
+  nmfast40.lib vcldb40.lib ibsmp40.lib vcljpg40.lib \
+  dclocx40.lib TaeRichEditComponent.lib vclx40.lib vcl40.lib
+SPARELIBS = vcl40.lib vclx40.lib TaeRichEditComponent.lib dclocx40.lib vcljpg40.lib \
+  ibsmp40.lib vcldb40.lib nmfast40.lib bcbsmp40.lib \
+  qrpt40.lib vcldbx40.lib teeui40.lib teedb40.lib tee40.lib
+PACKAGES = vclx40.bpi vcl40.bpi nmfast40.bpi Vcldb40.bpi \
+  Qrpt40.bpi stride40.bpi ibsmp40.bpi bcbsmp40.bpi vcljpg40.bpi proide40.bpi \
+  vcldbx40.bpi dclocx40.bpi TeeUI40.bpi teedb40.bpi tee40.bpi
+DEFFILE =
+# ---------------------------------------------------------------------------
+PATHCPP = .;
+PATHASM = .;
+PATHPAS = .;
+PATHRC = .;
+DEBUGLIBPATH = $(BCB)\lib\debug
+RELEASELIBPATH = $(BCB)\lib\release
+USERDEFINES =
+SYSDEFINES = NO_STRICT
+# ---------------------------------------------------------------------------
+CFLAG1 = -I"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl \
+  -O2 -Hc -H=$(BCB)\lib\vcl40.csm -w -Ve -Tkh30000 -a8 -5 -k- -vi \
+  -D$(SYSDEFINES);$(USERDEFINES) -c -b- -w-par -w-inl -Vx -tWM
+CFLAG2 =
+CFLAG3 =
+PFLAGS = -U"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(RELEASELIBPATH) \
+  -I"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl \
+  -N2OBJ -N0OBJ -$Y- -$L- -$D- -v -M -JPHNE
+RFLAGS = -i"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl
+AFLAGS = /i"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects" \
+  /i..\taerichedit /i$(BCB)\include /i$(BCB)\bin /i$(BCB)\Imports \
+  /i$(BCB)\include\vcl /mx /w2 /zn /z /x /n /c /d_RTLDLL /dUSEPACKAGES
+LFLAGS = -L"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(RELEASELIBPATH) \
+  -DFreeware -aa -Tpe -x -Gn -Gl -Gi -M
+IFLAGS =
+# ---------------------------------------------------------------------------
+ALLOBJ = c0w32.obj sysinit.obj $(OBJFILES)
+ALLRES = $(RESFILES)
+ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib
+# ---------------------------------------------------------------------------
+!ifdef IDEOPTIONS
+
+[Version Info]
+IncludeVerInfo=1
+AutoIncBuild=0
+MajorVer=7
+MinorVer=38
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1033
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=Discrete-Time Systems
+FileDescription=YahCoLoRiZe
+FileVersion=7.38.0.0
+InternalName=YahCoLoRiZe
+LegalCopyright=2016
+LegalTrademarks=YahCoLoRiZe
+OriginalFilename=Colorize.exe
+ProductName=YahCoLoRiZe Unicode
+ProductVersion=7.38
+Comments=Distribute freely... (Not FOR Commercial USE!)
+
+[HistoryLists\hlIncludePath]
+Count=5
+Item0=..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects;..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl
+Item1=..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl
+Item2=$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl
+Item3=..\taerichedit;..\..\..\..\..\..\Program Files (x86)\Borland\Cbuilder4\BIN;$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl
+Item4=$(BCB)\Imports;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=4
+Item0=..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects;..\taerichedit;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl
+Item1=..\taerichedit;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl
+Item2=$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl
+Item3=$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;..\Lib;..\Bpl
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\Projects\Yahcolorize\DBG
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=OBJ
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+InMemoryExe=0
+ShowInfoMsgs=0
+
+!endif
+
+# ---------------------------------------------------------------------------
+# MAKE SECTION
+# ---------------------------------------------------------------------------
+# This section of the project file is not used by the BCB IDE.  It is for
+# the benefit of building from the command-line using the MAKE utility.
+# ---------------------------------------------------------------------------
+
+.autodepend
+# ---------------------------------------------------------------------------
+!if !$d(BCC32)
+BCC32 = bcc32
+!endif
+
+!if !$d(CPP32)
+CPP32 = cpp32
+!endif
+
+!if !$d(DCC32)
+DCC32 = dcc32
+!endif
+
+!if !$d(TASM32)
+TASM32 = tasm32
+!endif
+
+!if !$d(LINKER)
+LINKER = ilink32
+!endif
+
+!if !$d(BRCC32)
+BRCC32 = brcc32
+!endif
+
+# ---------------------------------------------------------------------------
+!if $d(PATHCPP)
+.PATH.CPP = $(PATHCPP)
+.PATH.C   = $(PATHCPP)
+!endif
+
+!if $d(PATHPAS)
+.PATH.PAS = $(PATHPAS)
+!endif
+
+!if $d(PATHASM)
+.PATH.ASM = $(PATHASM)
+!endif
+
+!if $d(PATHRC)
+.PATH.RC  = $(PATHRC)
+!endif
+# ---------------------------------------------------------------------------
+$(PROJECT): $(OBJFILES) $(RESDEPEN) $(DEFFILE)
+    $(BCB)\BIN\$(LINKER) @&&!
+    $(LFLAGS) +
+    $(ALLOBJ), +
+    $(PROJECT),, +
+    $(ALLLIB), +
+    $(DEFFILE), +
+    $(ALLRES)
+!
+# ---------------------------------------------------------------------------
+.pas.hpp:
+    $(BCB)\BIN\$(DCC32) $(PFLAGS) {$< }
+
+.pas.obj:
+    $(BCB)\BIN\$(DCC32) $(PFLAGS) {$< }
+
+.cpp.obj:
+    $(BCB)\BIN\$(BCC32) $(CFLAG1) -n$(@D) {$< }
+
+.c.obj:
+    $(BCB)\BIN\$(BCC32) $(CFLAG1) -n$(@D) {$< }
+
+.c.i:
+    $(BCB)\BIN\$(CPP32) $(CFLAG1) -n. {$< }
+
+.cpp.i:
+    $(BCB)\BIN\$(CPP32) $(CFLAG1) -n. {$< }
+
+.asm.obj:
+    $(BCB)\BIN\$(TASM32) $(AFLAGS) $<, $@
+
+.rc.res:
+    $(BCB)\BIN\$(BRCC32) $(RFLAGS) -fo$@ $<
+# ---------------------------------------------------------------------------
