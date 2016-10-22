@@ -1,3 +1,11 @@
+//---------------------------------------------------------------------------
+// YahCoLoRiZe - Edit, process and send colorized text into IRC chat-rooms
+// via various chat-clients such as mIRC, IceCHat and LeafCHat
+//
+// Author: Scott Swift
+//
+// Released to GitHub under GPL v3 October, 2016
+//
 // I believe we can safely construe that this software may be released under
 // the Free Software Foundation's GPL - I adopted TaeRichEdit for my project
 // more than 15 years ago and have made significant changes in various
