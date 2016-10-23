@@ -1,3 +1,9 @@
+sha1 hashes for v7.38 github release 23-october-2016:
+fd6606fe587a360268b0952aba83b98e034afd5b yahcolorize32.exe
+2365a7a361b6cf07da0c3dbd1fba6e02f9cecad9 colorize.exe
+89199fdcf92d722ab7d9a904c738c057ff143cb6 colorize.dll
+01621e1a50b2e0eb0b18682b5ae0045d0828930f hunspell.dll
+
 The installer used is NSIS (nullsoft scriptable install system):
 
 https://sourceforge.net/projects/nsis/
