@@ -82,7 +82,7 @@ ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=7
-MinorVer=38
+MinorVer=40
 Release=0
 Build=0
 Debug=0
@@ -96,13 +96,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Discrete-Time Systems
 FileDescription=YahCoLoRiZe
-FileVersion=7.38.0.0
+FileVersion=7.40.0.0
 InternalName=YahCoLoRiZe
-LegalCopyright=2016
+LegalCopyright=2018
 LegalTrademarks=YahCoLoRiZe
 OriginalFilename=Colorize.exe
 ProductName=YahCoLoRiZe Unicode
-ProductVersion=7.38
+ProductVersion=7.40
 Comments=Distribute freely... (Not FOR Commercial USE!)
 
 [HistoryLists\hlIncludePath]

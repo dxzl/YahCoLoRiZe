@@ -92,7 +92,8 @@ bool __fastcall TOptimizer::StripRedundantFgRGB(wchar_t* &pOld, int &OldSize, bo
         continue;
       }
 
-      iRet = utils->SkipCode(pOld, ii, OldSize);
+      // !!!!!fix bug 11/8/2018 - ii and OldSize reversed below!!!!!!
+      iRet = utils->SkipCode(pOld, OldSize, ii);
 
       if (iRet == S_NULL)
         break;
@@ -105,7 +106,7 @@ bool __fastcall TOptimizer::StripRedundantFgRGB(wchar_t* &pOld, int &OldSize, bo
         continue;
       }
 
-      if (iRet)
+      if (iRet != S_NOCODE)
         continue;
 
       // Have a real char, set flags

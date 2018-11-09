@@ -557,6 +557,11 @@ void __fastcall TDTSColor::InitAllSettings(bool RestoreFactory)
   // Load emoticons
   ReadSmileys();
 
+  // We need to see if CSIDL_APPDATA (Users\(user)\AppData\Roaming)\Discrete-Iime Systems\YahCoLoRiZe)
+  // has our ini file and dictionaries, if not - copy over the default files from
+  // the install folder...
+  CopyIniFile();
+
   // Load Iftf strings...
   // Also loads Palette. In GetRegInfo below we will overwrite the first 16 Palette values...
   ReadIniFile(); // Loads colors, web-site, e-mail, SwiftMiX format, Etc.
@@ -1133,7 +1138,7 @@ void __fastcall TDTSColor::CustomMessageHandler(TMessage &msg)
           if (sms->len_album > 1024-1)
             sms->len_album = 1024-1;
           WmAlbum = String((char *)sms->album, sms->len_album);
-          PlaySong1->Enabled = true; // Enable item in popup menu
+          PopupProcessSongTitle->Enabled = true; // Enable item in popup menu
 
           if (SwiftMixSync->Checked)
           {
@@ -1507,8 +1512,8 @@ void __fastcall TDTSColor::AddEffect(int Effect, bool bUndo,
 
   // Set Properties... (all int except EP5)
   ProcessEffect->EP0 = this->EParm0;
-  ProcessEffect->EP1 = this->EParm1;
-  ProcessEffect->EP2 = this->EParm2;
+  ProcessEffect->EP1 = this->EParm1; // Usually foreground color
+  ProcessEffect->EP2 = this->EParm2; // Usually background color
   ProcessEffect->EP3 = this->EParm3; // Sometimes used for "mode"
   ProcessEffect->EP4 = this->EParm4; // Sometimes used for "Skip Spaces"
   ProcessEffect->EP5 = this->EParm5; // double
@@ -2795,6 +2800,72 @@ void __fastcall TDTSColor::FileExit(TObject *Sender)
 {
   Close();
 }
+//---------------------------------------------------------------------------
+void __fastcall TDTSColor::PopupTextStateClick(TObject *Sender)
+{
+  // View text state at caret
+
+  if (!utils->IsRtfIrcOrgView())
+    return;
+
+  TPoint p = tae->CaretPos;
+
+  WideString wS;
+
+  // get just the line the caret is on of raw codes into wS
+  utils->IsOrgView() ? wS = SL_ORG->GetString(p.y) : wS = SL_IRC->GetString(p.y);
+
+  if (!utils->IsRtfView())
+    p.x = utils->GetRealIndex(wS, p.x); // V_ORG or V_IRC, need real char index...
+
+  PUSHSTRUCT ps; // filled by reference in SetStateFlags()
+
+  if (utils->SetStateFlags(wS, p.x, ps) <= 0)
+    return; // error...
+
+  WideString wPrintStr;
+
+  wPrintStr += "Line: " + String(p.y+1) + "," + String(p.x+1);
+
+  wPrintStr += "\n\nBold: ";
+  ps.bBold ? wPrintStr += "on" : wPrintStr += "off";
+  wPrintStr += "\nUnderline: ";
+  ps.bUnderline ? wPrintStr += "on" : wPrintStr += "off";
+  wPrintStr += "\nItalics (reverse video): ";
+  ps.bItalics ? wPrintStr += "on" : wPrintStr += "off";
+
+  if (ps.fg == NO_COLOR)
+    wPrintStr += "\n(no foreground color)";
+  else
+  {
+    BlendColor fg = utils->YcToBlendColor(ps.fg);
+    wPrintStr += "\n\nForeground RGB: " + String(fg.red) + "," +
+                    String(fg.green) + "," + String(fg.blue);
+    if (ps.fg > 0) // palette color?
+      wPrintStr += "\n(palette color index: " + String(ps.fg-1) + ")";
+  }
+
+  if (ps.bg == NO_COLOR)
+    wPrintStr += "\n(no background color)";
+  else
+  {
+    BlendColor bg = utils->YcToBlendColor(ps.bg);
+    wPrintStr += "\n\nBackground RGB: " + String(bg.red) + "," +
+                    String(bg.green) + "," + String(bg.blue);
+    if (ps.bg > 0) // palette color?
+      wPrintStr += "\n(palette color index: " + String(ps.bg-1) + ")";
+  }
+
+  WideString wFontString = utils->GetLocalFontStringW(ps.fontType);
+
+  if (ps.fontSize <= 0 || wFontString.IsEmpty())
+    wPrintStr += "\n(no font)";
+  else
+    wPrintStr += "\n\nFont: \"" + wFontString +
+                "\"," + String(ps.fontSize);
+
+  utils->ShowMessageW(wPrintStr);
+}
 //----------------------------------------------------------------------------
 void __fastcall TDTSColor::EditCut(TObject *Sender)
 {
@@ -2806,7 +2877,7 @@ void __fastcall TDTSColor::EditCopy(TObject *Sender)
   TaeEditCutCopy(false, true);
 }
 //---------------------------------------------------------------------------
-void __fastcall TDTSColor::Delete1Click(TObject *Sender)
+void __fastcall TDTSColor::PopupDeleteClick(TObject *Sender)
 {
   TaeEditCutCopy(true, false);
 }
@@ -2819,7 +2890,7 @@ void __fastcall TDTSColor::HelpAbout(TObject *Sender)
   AboutForm = NULL;
 }
 //----------------------------------------------------------------------------
-void __fastcall TDTSColor::EditSelectAllItemClick(TObject *Sender)
+void __fastcall TDTSColor::EditSelectAllClick(TObject *Sender)
 {
   if (tae->TextLength != 0)
     tae->SelectAll();
@@ -2902,7 +2973,7 @@ void __fastcall TDTSColor::DoP(bool bShowStatus)
 
   // Don't allow user to keep pressing this!
   ProcessButton->Enabled = false;
-  Process1->Enabled = false;
+  PopupProcess->Enabled = false;
 
   // Display "Cancel" modeless dialog
   bool bSmallAmountOfText = tae->TextLength < STATUSLENGTH;
@@ -4825,12 +4896,12 @@ void __fastcall TDTSColor::UpdateProcessButtons(int View)
   if (View == V_RTF_SOURCE || View == V_HTML)
   {
     ProcessButton->Enabled = false;
-    Process1->Enabled = false;
+    PopupProcess->Enabled = false;
   }
   else
   {
     ProcessButton->Enabled = true;
-    Process1->Enabled = true;
+    PopupProcess->Enabled = true;
   }
 
   ProcessButton->Caption = String(FN[1]);
@@ -6456,6 +6527,8 @@ void __fastcall TDTSColor::GetRegInfo(bool RestoreFactory)
 
   try
   {
+    bool bNewInstall = false;
+
     if (RestoreFactory)
     {
       // Blender colors may change, so go to Process page
@@ -6471,43 +6544,53 @@ void __fastcall TDTSColor::GetRegInfo(bool RestoreFactory)
       ReadFromRegistry();
       LoadBlendPresetsFromRegistry();
     }
+    // NOTE: If the installer creates this as an empty key,
+    // set "Always Create" FALSE or OpenKey below will succeed incorrectly!
     else if (MyRegistry->OpenKey(RegKey, false))
     {
       // If old version registered, delete it
-      if (MyRegistry->ReadString("Revision") != REVISION)
+      if (MyRegistry->ValueExists("Revision"))
       {
+        if (MyRegistry->ReadString("Revision") != REVISION)
+        {
 #if (FORCEREGISTRY)
-        MyRegistry->DeleteKey(RegKey);
-
-        // Add defaults to registry
-        SaveBlendPresets();
-
-        utils->ShowMessageU(String(DS[93]));
-#endif
-        // Save old settings?
-        if (utils->ShowMessageU(Handle, DS[94],
-                      MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1) == IDYES)
-        {
-          // Force new revision and play buffer size
-          MyRegistry->WriteString("Revision", REVISION);
-          MyRegistry->WriteInteger("PlayBufSize", GMaxPlayXmitBytes);
-        }
-        else
-        {
           MyRegistry->DeleteKey(RegKey);
 
           // Add defaults to registry
           SaveBlendPresets();
+
+          utils->ShowMessageU(String(DS[93]));
+#endif
+          // Save old settings?
+          if (utils->ShowMessageU(Handle, DS[94],
+                        MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1) == IDYES)
+          {
+            // Force new revision and play buffer size
+            MyRegistry->WriteString("Revision", REVISION);
+            MyRegistry->WriteInteger("PlayBufSize", GMaxPlayXmitBytes);
+          }
+          else
+          {
+            MyRegistry->DeleteKey(RegKey);
+
+            // Add defaults to registry
+            SaveBlendPresets();
+          }
         }
+
+        MyRegistry->CloseKey();
+
+        // Reload everything (and do any required setup)
+        ReadFromRegistry();
+        LoadBlendPresetsFromRegistry();
       }
-
-      MyRegistry->CloseKey();
-
-      // Reload everything (and do any required setup)
-      ReadFromRegistry();
-      LoadBlendPresetsFromRegistry();
+      else
+        bNewInstall = true;
     }
-    else // New install
+    else
+      bNewInstall = true;
+
+    if (bNewInstall)
     {
       // Add defaults to registry
       SaveBlendPresets();
@@ -7467,23 +7550,22 @@ void __fastcall TDTSColor::EffectSetFgBgClick(TObject *Sender)
     return;
   }
 
+  EParm1 = SetColorsForm->FgColor;
+  EParm2 = SetColorsForm->BgColor;
+  EParm3 = SetColorsForm->Mode;
+  YcDestroyForm(SetColorsForm);
+  SetColorsForm = NULL;
+
   if (IsRawCodeMode())
   {
     int SaveSelStart = tae->SelStart;
     WideString sColors;
-    utils->WriteColors(SetColorsForm->FgColor, SetColorsForm->BgColor, sColors);
-    YcDestroyForm(SetColorsForm);
-    SetColorsForm = NULL; 
+    utils->WriteColors(EParm1, EParm2, sColors);
     TaeEditPaste(true, sColors);
     tae->SelStart = SaveSelStart + sColors.Length();
   }
   else
   {
-    EParm1 = SetColorsForm->FgColor;
-    EParm2 = SetColorsForm->BgColor;
-    EParm3 = SetColorsForm->Mode;
-    YcDestroyForm(SetColorsForm);
-    SetColorsForm = NULL;
     AddEffect(E_SET_COLORS);
   }
 }
@@ -9815,6 +9897,82 @@ void __fastcall TDTSColor::ExtendPaletteClick(TObject *Sender)
   }
 }
 //---------------------------------------------------------------------------
+void __fastcall TDTSColor::CopyIniFile(void)
+// Force ini file-update if new format revision or file is missing
+// in the AppData folder...
+{
+  TIniFile *pIni = NULL;
+
+  try
+  {
+    try
+    {
+      // Look in the exe path first...
+      WideString newIniPath = utils->ExtractFilePathW(utils->GetExeNameW()) +
+                                                utils->Utf8ToWide(INIFILE);
+      // utils->ShowMessageW(newIniPath);
+
+      if (utils->FileExistsW(newIniPath))
+      {
+        pIni = utils->OpenIniFile(newIniPath);
+
+        if (pIni == NULL)
+          return;
+
+        int newRev = pIni->ReadInteger(OUR_NAME_S, "revision", -1);
+
+        if (newRev == -1)
+          return;
+
+        // ShowMessage(String(newRev));
+
+        // get Users\(name)\AppData\Roaming\Discrete-Time Systems\YahCoLoRiZe path
+        // (path MUST be created by the installer!)
+        WideString oldIniPath = utils->GetSpecialFolder(CSIDL_APPDATA) +
+          "\\" + utils->Utf8ToWide(OUR_COMPANY) + "\\" +
+                utils->Utf8ToWide(OUR_NAME) + "\\";
+
+// this won't work without a security descriptor, so must create path via installer!
+//        if (CreateDirectoryW(oldIniPath, NULL) == 0)
+//          ShowMessage("fail");
+
+        oldIniPath += utils->Utf8ToWide(INIFILE);
+
+        // utils->ShowMessageW(oldIniPath);
+
+        if (utils->FileExistsW(oldIniPath))
+        {
+          delete pIni;
+          pIni = utils->OpenIniFile(oldIniPath);
+
+          int oldRev = pIni->ReadInteger(OUR_NAME_S, "revision", -1);
+
+          // ShowMessage(String(oldRev));
+
+          if (oldRev == -1 || newRev != oldRev)
+            CopyFileW(newIniPath, oldIniPath, false); // bFailIfExists false
+        }
+        else
+          CopyFileW(newIniPath, oldIniPath, false); // bFailIfExists false
+      }
+
+    }
+    catch(const std::exception& e)
+    {
+      return;
+    }
+  }
+  __finally
+  {
+    try
+    {
+      if (pIni != NULL)
+        delete pIni;
+    }
+    catch(...) {}
+  }
+}
+//---------------------------------------------------------------------------
 bool __fastcall TDTSColor::ReadIniFile(void)
 // Reads the colorize.ini file
 {
@@ -11025,12 +11183,12 @@ void __fastcall TDTSColor::UpdateViewMenuState(void)
   if (SL_ORG->Count > 0)
   {
     Original1->Enabled = true;
-    Original2->Enabled = true;
+    PopupOriginal->Enabled = true;
   }
   else
   {
     Original1->Enabled = false;
-    Original2->Enabled = false;
+    PopupOriginal->Enabled = false;
   }
 
   // Leave this on so we can show the rtf source even if no MS_RTF text...
@@ -11750,6 +11908,12 @@ void __fastcall TDTSColor::PasteFgColorMenuItemClick(TObject *Sender)
 void __fastcall TDTSColor::PasteBgColorMenuItemClick(TObject *Sender)
 {
   PasteColor(ColorCopyBg);
+}
+//---------------------------------------------------------------------------
+void __fastcall TDTSColor::PopupMenu1Popup(TObject *Sender)
+{
+  // enable/disable PopupTextState menu item
+  PopupTextState->Enabled = utils->IsRtfIrcOrgView() && tae->Lines->Count ? true : false;
 }
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::PasteColor(int C)

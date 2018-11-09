@@ -6956,9 +6956,9 @@ int __fastcall TUtils::ResolveStateForPaste(TPoint p, WideString &wInOut,
     }
 
     // get index of printable char
-    int idxChar = utils->GetCodeIndex(wInOut, p.x, false);
+    int idxChar = GetCodeIndex(wInOut, p.x, false);
     // get index at start of codes before caret
-    int idxCodes = utils->GetCodeIndex(wInOut, p.x, true);
+    int idxCodes = GetCodeIndex(wInOut, p.x, true);
 
     if (idxCodes >= 0 && idxChar >= 0)
     {
@@ -8869,8 +8869,8 @@ TIniFile* __fastcall TUtils::OpenIniFile(WideString wFilePath, bool bShow)
     WideString IniFile;
 
     if (wFilePath.IsEmpty())
-      // Look in "Users\All Users\Discrete-Time Systems" folder
-      IniFile = GetSpecialFolder(CSIDL_COMMON_APPDATA) +
+      // Look in "Users\(name)\Discrete-Time Systems\YahCoLoRiZe" folder
+      IniFile = GetSpecialFolder(CSIDL_APPDATA) +
           "\\" + Utf8ToWide(OUR_COMPANY) + "\\" + Utf8ToWide(OUR_NAME) +
                                                   "\\" + Utf8ToWide(INIFILE);
     else

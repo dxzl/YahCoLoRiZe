@@ -28,11 +28,13 @@ __fastcall TChooseDictForm::TChooseDictForm(TComponent* Owner)
 
   OkButton->Caption = SPELLINGMSG[21];
 
+  // Dictionary(s) will be in the install directory Dict sub-directory...
   WideString DictPath = utils->ExtractFilePathW(utils->GetExeNameW()) +
                                                utils->Utf8ToWide(DICTDIR);
 
-  //String DictPath = utils->GetSystemDir(CSIDL_COMMON_APPDATA) + "\\" +
-  //         OUR_COMPANY + "\\" + DICTDIR;
+  //WideString DictPath = utils->GetSpecialFolder(CSIDL_APPDATA) +
+  //        "\\" + utils->Utf8ToWide(OUR_COMPANY) + "\\" +
+  //        utils->Utf8ToWide(OUR_NAME) + "\\" + utils->Utf8ToWide(DICTDIR);
 
   struct _wffblk sr;
 

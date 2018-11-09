@@ -59,8 +59,9 @@ void __fastcall TMorphForm::FormShow(TObject *Sender)
   MaxColorsLabel->Visible = !FHideMaxColors;
 
   MaxColorsUpDown->Position = (short)maxColors;
-  
+
   this->Caption = FTitle;
+  this->MorphGroupBox->Caption = FTitle;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMorphForm::FormClose(TObject *Sender, TCloseAction &Action)

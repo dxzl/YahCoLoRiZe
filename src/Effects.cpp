@@ -259,7 +259,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
         dts->CpShow(STATUS[6]);
 
       // Set global flag to tell us we are going to record the color of space
-      // chars for this effect.
+      // chars for this effect. (ep4 is "skip spaces ON")
       bool bIsSpaceEffect = (ep4 == true && (effect == E_INC_COLORS ||
                         effect == E_ALT_COLORS || effect == E_RAND_COLORS));
 
@@ -478,7 +478,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
       bInitEveryLine = (effect == E_SET_COLORS || effect == E_REPLACE_COLOR ||
                 effect == E_ALT_COLORS || effect == E_ALT_CHAR ||
                      effect == E_FONT_SIZE || effect == E_FONT_TYPE);
-
+                     
       dts->CpSetMaxIterations(iSize);
 
       for(;;) // For each paragraph...
@@ -613,7 +613,6 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
                                               STATE_MODE_LASTCHAR, s, true);
 
               //ShowMessage(utils->PrintStateString(s));
-
               utils->WriteColors(s.fg, s.bg, TempStr);
             }
 
@@ -1440,6 +1439,7 @@ bool __fastcall TProcessEffect::CheckExistingCodes(int &idx,  wchar_t buf[],
       return true;
     }
 
+    // only process colors for the replace color effect?
     if (buf[idx] == CTRL_K)
     {
       int fg = NO_COLOR;
@@ -1450,9 +1450,12 @@ bool __fastcall TProcessEffect::CheckExistingCodes(int &idx,  wchar_t buf[],
 
       if (Count)
       {
+        // !!!!!fix bug 11/8/2018 - added else call of WriteColors!!!!!
         if (effect == E_REPLACE_COLOR)
           WriteColorsReplace(Output, fg, bg);
-          
+        else
+          utils->WriteColors(fg, bg, Output);
+
         idx += Count;
         bColorOn = true;
       }
@@ -1938,8 +1941,8 @@ WideString __fastcall TProcessEffect::ApplySingleCode(WideString S, wchar_t c)
 
   sl->Text = S;
 
-  int ii = 0;
-  while (ProcessStyle(sl, ii++, c));
+  int iLineCount = 0;
+  while (ProcessStyle(sl, iLineCount++, c));
 
   S = sl->Text;
 
@@ -1971,17 +1974,17 @@ WideString __fastcall TProcessEffect::ApplySingleCode(WideString S, wchar_t c)
 // For > 2 lines, add a code to the beginning and end of each of those strings
 // if the style was off in InitialState (we are turning the style ON for the
 // entire selection). Otherwise, just strip them.
-bool __fastcall TProcessEffect::ProcessStyle(TStringsW* sl, int ii, wchar_t c)
+bool __fastcall TProcessEffect::ProcessStyle(TStringsW* sl, int iLineCount, wchar_t c)
 {
   int slCount = sl->Count;
 
-  if (!slCount || ii < 0 || ii >= slCount)
+  if (!slCount || iLineCount < 0 || iLineCount >= slCount)
     return false;
 
   WideString s;
 
   // Get string
-  s = sl->GetString(ii);
+  s = sl->GetString(iLineCount);
   int realLen = utils->GetRealLength(s);
 
   if (realLen == 0)
@@ -2022,7 +2025,7 @@ bool __fastcall TProcessEffect::ProcessStyle(TStringsW* sl, int ii, wchar_t c)
     // do the logic... took some doing to figure all of this out :-)
 
     // leading...
-    if (ii == 0)
+    if (iLineCount == 0)
       // leading state for the first line is just the inverse of the state
       // of the line's leading codes (not relative to the entire document)
       l = !l;
@@ -2033,7 +2036,7 @@ bool __fastcall TProcessEffect::ProcessStyle(TStringsW* sl, int ii, wchar_t c)
       l = !ls;
 
     // trailing...
-    if (slCount == 1 || (slCount > 0 && ii == slCount-1))
+    if (slCount == 1 || (slCount > 0 && iLineCount == slCount-1))
       // trailing state in the last line of the string-list is "not"
       // exclusive or of the document-relative leading and trailing states.
       t = !(ls ^ ts);
@@ -2061,7 +2064,9 @@ bool __fastcall TProcessEffect::ProcessStyle(TStringsW* sl, int ii, wchar_t c)
     }
 
     // delete old trailing state first (or the index will no longer be right!)
-    s = utils->DeleteW(s, iTrailingStart+1, iTrailingEnd-iTrailingStart);
+    // !!!!!fix bug 11/8/2018 - number of characters to delete was short by 1!!!!!
+    //    s = utils->DeleteW(s, iTrailingStart+1, iTrailingEnd-iTrailingStart);
+    s = utils->DeleteW(s, iTrailingStart+1, iTrailingEnd-iTrailingStart+1);
 
     // delete old leading state
     s = utils->DeleteW(s, 1, iLeadingEnd);
@@ -2076,7 +2081,7 @@ bool __fastcall TProcessEffect::ProcessStyle(TStringsW* sl, int ii, wchar_t c)
     s += utils->PrintStateString(psTrailing, false);
 
     // write the string back
-    sl->SetString(s, ii);
+    sl->SetString(s, iLineCount);
   }
 
   return true;
@@ -2458,7 +2463,8 @@ TList* __fastcall TProcessEffect::RecordSpaceBgColors(wchar_t* pBuf, int iSize)
         continue;
       }
 
-      iRet = utils->SkipCode(pBuf, ii, iSize);
+      // !!!!!fix bug 11/8/2018 - ii and iSize reversed below!!!!!!
+      iRet = utils->SkipCode(pBuf, iSize, ii);
 
       if (iRet == S_NULL)
         break;
@@ -2470,7 +2476,7 @@ TList* __fastcall TProcessEffect::RecordSpaceBgColors(wchar_t* pBuf, int iSize)
         continue;
       }
 
-      if (iRet)
+      if (iRet != S_NOCODE)
         continue;
 
       // Add a space-sequence's color and index to our list
@@ -2505,7 +2511,7 @@ TList* __fastcall TProcessEffect::RecordSpaceBgColors(wchar_t* pBuf, int iSize)
           }
         }
       }
-      else
+      else if (bFirstSpace)
         bFirstSpace = false;
     }
 

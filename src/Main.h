@@ -10,9 +10,11 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.38" // Unicode Version
+#define REVISION "7.40" // Unicode Version
 
-// December 21, 2015, in effects ApplyPushPop, pop needed to come before the
+// November 6, 2018, 7.40, in Effects.cpp in CheckExistionCodes, old color
+// codes were not being added for the E_SET_COLORS effect.
+//
 // color/font codes, not after. Plus the wrong states were being used. Also,
 // E_SET_COLORS needed to set PrevFG and PrevBG so a pop would set the correct
 // color.
@@ -714,11 +716,11 @@ __published:
   TMenuItem *N1;
   TPopupMenu *PopupMenu1;
   TMenuItem *PopupPaste;
-  TMenuItem *Cut1;
-  TMenuItem *SelectAll2;
-  TMenuItem *Process1;
-  TMenuItem *Clear1;
-  TMenuItem *Copy1;
+  TMenuItem *PopupCut;
+  TMenuItem *PopupSelectAll;
+  TMenuItem *PopupProcess;
+  TMenuItem *PopupClear;
+  TMenuItem *PopupCopy;
   TMenuItem *ViewMenu;
   TMenuItem *Original1;
   TMenuItem *EditFindItem;
@@ -773,7 +775,7 @@ __published:
   TMenuItem *ImportBlendColors1;
   TMenuItem *ExportBlendColors1;
   TMenuItem *N10;
-  TMenuItem *Original2;
+  TMenuItem *PopupOriginal;
   TMenuItem *FontSize;
   TMenuItem *FontMountain;
   TMenuItem *FontValley;
@@ -797,7 +799,7 @@ __published:
   TMenuItem *ExportAsWebPage1;
   TMenuItem *N14;
   TMenuItem *FontRandom;
-  TMenuItem *Play1;
+  TMenuItem *PopupPlay;
   TMenuItem *N6;
   TTimer *Timer2;
   TTimer *RepaintTimer;
@@ -864,12 +866,12 @@ __published:
   TUpDown *RGBThresholdUpDown;
   TEdit *RGBThresholdEdit;
   TCheckBox *PlayOnCX;
-  TMenuItem *PlaySong1;
+  TMenuItem *PopupProcessSongTitle;
   TMenuItem *N17;
   TDdeServerItem *ddetext;
   TDdeServerItem *ddechan;
   TDdeServerConv *command;
-  TMenuItem *Delete1;
+  TMenuItem *PopupDelete;
   TMenuItem *N18;
   TMenuItem *EditPasteColorItem;
   TMenuItem *PopupPasteColor;
@@ -950,6 +952,7 @@ __published:
   TProgressBar *CpProgressBar;
   TMenuItem *MenuPadSpaces;
   TMenuItem *MenuFavoriteColors;
+  TMenuItem *PopupTextState;
   void __fastcall ImportBlender(TObject *Sender);
   void __fastcall ExportBlender(TObject *Sender);
   void __fastcall ImportBlenderText(TObject *Sender);
@@ -961,7 +964,7 @@ __published:
   void __fastcall EditCopy(TObject *Sender);
   void __fastcall EditPaste(TObject *Sender);
   void __fastcall HelpAbout(TObject *Sender);
-  void __fastcall EditSelectAllItemClick(TObject *Sender);
+  void __fastcall EditSelectAllClick(TObject *Sender);
   void __fastcall FileSaveAsItemClick(TObject *Sender);
   void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
   void __fastcall MenuWingEditClick(TObject *Sender);
@@ -1069,7 +1072,7 @@ __published:
   void __fastcall ProcessSongTitleClick(TObject *Sender);
   void __fastcall ddetextPokeData(TObject *Sender);
   void __fastcall ddechanPokeData(TObject *Sender);
-  void __fastcall Delete1Click(TObject *Sender);
+  void __fastcall PopupDeleteClick(TObject *Sender);
 //  void __fastcall TaeEditMouseMove(TObject *Sender, TShiftState Shift,
 //          int X, int Y);
   void __fastcall FontSize1Click(TObject *Sender);
@@ -1127,6 +1130,8 @@ __published:
   void __fastcall TaeEditInsertModeChange(TObject *Sender);
   void __fastcall MenuPadSpacesClick(TObject *Sender);
   void __fastcall FavoriteColorsClick(TObject *Sender);
+  void __fastcall PopupTextStateClick(TObject *Sender);
+  void __fastcall PopupMenu1Popup(TObject *Sender);
 //  void __fastcall TaeEditChange(TObject *Sender, DWORD dwChangeType,
 //          void *pvCookieData, bool &AllowChange);
 
@@ -1277,6 +1282,7 @@ private:        // private user declarations
   PUSHSTRUCT __fastcall GetState(void);
   String __fastcall ReadColorsFromIni(TIniFile* pIni, int &count);
   bool __fastcall ReadPluginClassAndNameFromIni(TIniFile* pIni, int &count);
+  void __fastcall CopyIniFile(void);
   bool __fastcall ReadIniFile(void);
   bool __fastcall WriteDictToIniFile(void);
   void __fastcall YcDestroyForm(TForm* f);

@@ -42,7 +42,8 @@ void __fastcall TSpellCheckForm::FormCreate(TObject *Sender)
   {
     WideString DllPath = utils->ExtractFilePathW(utils->GetExeNameW()) +
                                 "\\" + utils->Utf8ToWide(SPELLINGMSG[35]);
-    //String DllPath = utils->GetSystemDir(CSIDL_SYSTEM) +
+
+    //WideString DllPath = utils->GetSystemDir(CSIDL_SYSTEM) +
     //                            "\\" + String(SPELLINGMSG[35]);
 
     // "hunspell.dll", HunSpell spell-checker DLL 35
@@ -261,10 +262,12 @@ bool __fastcall TSpellCheckForm::LoadLibHunspell(WideString libraryName)
 //---------------------------------------------------------------------------
 bool __fastcall TSpellCheckForm::InitDictionary(void)
 {
+  // Dictionary(s) will be in the install directory Dict sub-directory...
   WideString DictPath = utils->ExtractFilePathW(utils->GetExeNameW()) +
                                               utils->Utf8ToWide(DICTDIR);
-  //String DictPath = utils->GetSystemDir(CSIDL_COMMON_APPDATA) + "\\" +
-  //         OUR_COMPANY + "\\" + DICTDIR;
+  //WideString DictPath = utils->GetSpecialFolder(CSIDL_APPDATA) +
+  //        "\\" + utils->Utf8ToWide(OUR_COMPANY) + "\\" + utils->Utf8ToWide(OUR_NAME) +
+                                                  "\\" + utils->Utf8ToWide(DICTDIR);
 
   WideString wAff = DictPath + dts->GDictionary + ".aff";
   WideString wDct = DictPath + dts->GDictionary + ".dic";
