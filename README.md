@@ -10,5 +10,10 @@ My Other projects which are part of YahCoLoRiZe: tae-richedit, icechat-yahcolori
 ## Notes
 Visit: [http://YahCoLoRiZe.com](http://YahCoLoRiZe.com) to download english, french or spanish installers, I use a self-signed installer so expect "the sky is falling" warnings from Windows about downloading...
 
+Project web-site:
 
-Email: [dxzl@live.com](dxzl@live.com)
+http://swiftmix.yahcolorize.com
+
+Contact: dxzl@live.com
+
+![Preview](yc.png)
