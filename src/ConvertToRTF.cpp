@@ -202,7 +202,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
       // Add a default fg color of black if no colors before first
       // non-space char
       PUSHSTRUCT ps;
-      if (utils->SetStateFlags(buf, size, 0, ps, true) >= 0)
+      if (utils->SetStateFlags(buf, size, 0, ps) >= 0)
         if (ps.fg == NO_COLOR)
           AddOrResolveColor(IRCBLACK, PosRgbList);
 

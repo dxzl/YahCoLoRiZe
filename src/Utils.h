@@ -147,29 +147,29 @@ public:
   bool __fastcall GetIndicesAndStates(WideString S,
                                  PUSHSTRUCT &psFirst, PUSHSTRUCT &psLast);
 
-  WideString __fastcall GetTrailingState(WideString &S);
+  WideString __fastcall GetTrailingState(WideString &wInOut);
   PUSHSTRUCT __fastcall GetLeadingState(WideString wIn, int &iEnd);
   PUSHSTRUCT __fastcall GetTrailingState(WideString wIn, int &iStart,
                                                             int &iEnd);
 
-  int __fastcall GetState(WideString S, PUSHSTRUCT &psState, int Idx,
-                           bool bCopyAfgAbg, bool bSkipSpaces);
+  int __fastcall GetState(WideString wIn, PUSHSTRUCT &psState, int Idx,
+                           bool bCopyAfgAbg, bool bTrackSpaceColorChanges=true);
   int __fastcall GetState(wchar_t* pBuf, int iSize,
-         PUSHSTRUCT &psState, int Idx, bool bCopyAfgAbg, bool bSkipSpaces);
+         PUSHSTRUCT &psState, int Idx, bool bCopyAfgAbg, bool bTrackSpaceColorChanges=true);
 
-  int __fastcall GetState(WideString S, WideString &State, int Idx,
-                     bool bLeading, bool bCopyAfgAbg, bool bSkipSpaces);
+  int __fastcall GetState(WideString wIn, WideString &State, int Idx,
+                     bool bLeading, bool bCopyAfgAbg, bool bTrackSpaceColorChanges=true);
   int __fastcall GetState(wchar_t* pBuf, int iSize, WideString &State,
-                  int Idx, bool bLeading, bool bCopyAfgAbg, bool bSkipSpaces);
+                  int Idx, bool bLeading, bool bCopyAfgAbg, bool bTrackSpaceColorChanges=true);
 
   int __fastcall SetStateFlags(wchar_t* pBuf, int iSize, int iBufStart,
-          int iCharStopAt, PUSHSTRUCT &ps, bool bSkipLeadingSpaces=false);
+          int iCharStopAt, PUSHSTRUCT &ps, bool bTrackSpaceColorChanges=true);
   int __fastcall SetStateFlags(wchar_t* pBuf, int iSize, int iCharStopAt,
-                            PUSHSTRUCT &ps, bool bSkipLeadingSpaces=false);
+                            PUSHSTRUCT &ps, bool bTrackSpaceColorChanges=true);
   int __fastcall SetStateFlags(WideString S, int iCharStopAt,
-                         PUSHSTRUCT &ps, bool bSkipLeadingSpaces=false);
+                         PUSHSTRUCT &ps, bool bTrackSpaceColorChanges=true);
   int __fastcall SetStateFlags(WideString S, int iBufStart,
-              int iCharStopAt, PUSHSTRUCT &ps, bool bSkipLeadingSpaces=false);
+              int iCharStopAt, PUSHSTRUCT &ps, bool bTrackSpaceColorChanges=true);
 
   bool __fastcall ResolveState(PUSHSTRUCT TrailingState, WideString &TempStr);
   int __fastcall ResolveStateForPaste(TPoint p, WideString &wInOut,
@@ -329,6 +329,7 @@ public:
   bool __fastcall TextContainsFormatCodes(TStringsW* sl);
   bool __fastcall TextContainsFormatCodes(WideString S);
   bool __fastcall TextContainsFormatCodes(wchar_t* pBuf, int iSize);
+  void __fastcall TUtils::ShowState(PUSHSTRUCT ps, int iRow=-1, int iColumn=-1);
 
   // Font
   int __fastcall CountFontSequence(wchar_t* pBuf, int ii, int iSize);

@@ -2508,7 +2508,7 @@ bool __fastcall TReplaceTextForm::ProcessOC(TTaeRichEdit* re, ONCHANGEW oc)
             {
               // Don't Copy Afg/Abg if NO_COLOR, don't skip spaces...(ok?)
               int RetIdx = utils->GetState(EditString[idx], LeadingState,
-                           oc.selStart-oc.line+1, true, false, false);
+                           oc.selStart-oc.line+1, true, false);
 
               if (RetIdx < 0)
                 LeadingState = "";
@@ -2550,7 +2550,7 @@ bool __fastcall TReplaceTextForm::ProcessOC(TTaeRichEdit* re, ONCHANGEW oc)
                 {
                   // Copy Afg/Abg if NO_COLOR, don't skip spaces...(ok?)
                   int RetIdx = utils->GetState(EditString[idx], LeadingState,
-                                    oc.selStart-oc.line, true, true, false);
+                                    oc.selStart-oc.line, true, true);
 
                   if (RetIdx < 0)
                     LeadingState = "";

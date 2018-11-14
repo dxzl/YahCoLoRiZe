@@ -2823,48 +2823,7 @@ void __fastcall TDTSColor::PopupTextStateClick(TObject *Sender)
   if (utils->SetStateFlags(wS, p.x, ps) <= 0)
     return; // error...
 
-  WideString wPrintStr;
-
-  wPrintStr += "Line: " + String(p.y+1) + "," + String(p.x+1);
-
-  wPrintStr += "\n\nBold: ";
-  ps.bBold ? wPrintStr += "on" : wPrintStr += "off";
-  wPrintStr += "\nUnderline: ";
-  ps.bUnderline ? wPrintStr += "on" : wPrintStr += "off";
-  wPrintStr += "\nItalics (reverse video): ";
-  ps.bItalics ? wPrintStr += "on" : wPrintStr += "off";
-
-  if (ps.fg == NO_COLOR)
-    wPrintStr += "\n(no foreground color)";
-  else
-  {
-    BlendColor fg = utils->YcToBlendColor(ps.fg);
-    wPrintStr += "\n\nForeground RGB: " + String(fg.red) + "," +
-                    String(fg.green) + "," + String(fg.blue);
-    if (ps.fg > 0) // palette color?
-      wPrintStr += "\n(palette color index: " + String(ps.fg-1) + ")";
-  }
-
-  if (ps.bg == NO_COLOR)
-    wPrintStr += "\n(no background color)";
-  else
-  {
-    BlendColor bg = utils->YcToBlendColor(ps.bg);
-    wPrintStr += "\n\nBackground RGB: " + String(bg.red) + "," +
-                    String(bg.green) + "," + String(bg.blue);
-    if (ps.bg > 0) // palette color?
-      wPrintStr += "\n(palette color index: " + String(ps.bg-1) + ")";
-  }
-
-  WideString wFontString = utils->GetLocalFontStringW(ps.fontType);
-
-  if (ps.fontSize <= 0 || wFontString.IsEmpty())
-    wPrintStr += "\n(no font)";
-  else
-    wPrintStr += "\n\nFont: \"" + wFontString +
-                "\"," + String(ps.fontSize);
-
-  utils->ShowMessageW(wPrintStr);
+  utils->ShowState(ps, p.y+1, p.x+1);
 }
 //----------------------------------------------------------------------------
 void __fastcall TDTSColor::EditCut(TObject *Sender)
@@ -5967,7 +5926,7 @@ void __fastcall TDTSColor::PageBreak1Click(TObject *Sender)
   {
     // get state
     WideString wState;
-    utils->GetState(wS, wState, idx, true, false, false);
+    utils->GetState(wS, wState, idx, true, false);
     wFormFeed += CRLF + wState;
   }
 

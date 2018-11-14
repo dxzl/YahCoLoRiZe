@@ -1495,16 +1495,16 @@ bool __fastcall TUtils::GetIndicesAndStates(wchar_t* pBuf, int iSize,
 //---------------------------------------------------------------------------
 // Overloaded
 
-int __fastcall TUtils::GetState(WideString S, WideString &State, int Idx,
-                       bool bLeading, bool bCopyAfgAbg, bool bSkipSpaces)
+int __fastcall TUtils::GetState(WideString wIn, WideString &State, int Idx,
+                       bool bLeading, bool bCopyAfgAbg, bool bTrackSpaceColorChanges)
 // S is the string of raw-codes (see below)
 {
-  return GetState(S.c_bstr(), S.Length(), State, Idx, bLeading,
-                                                bCopyAfgAbg, bSkipSpaces);
+  return GetState(wIn.c_bstr(), wIn.Length(), State, Idx, bLeading,
+                                          bCopyAfgAbg, bTrackSpaceColorChanges);
 }
 
 int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, WideString &State,
-                    int Idx, bool bLeading, bool bCopyAfgAbg, bool bSkipSpaces)
+                    int Idx, bool bLeading, bool bCopyAfgAbg, bool bTrackSpaceColorChanges)
 // pBuf is the buffer of raw-codes.
 // State is returned with the state formated into a WideString.
 // Idx is the 0-based "Real Character index" up to which we record the state.
@@ -1515,7 +1515,7 @@ int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, WideString &State,
 //    STATE_MODE_LASTCHAR  -1
 //    STATE_MODE_ENDOFBUF  -2
 //
-// If bSkipSpaces is set we continue recording to the first non-space
+// If bTrackSpaceColorChanges is true we continue recording to the first non-space
 // wchar_t past Idx. If bCopyAfgAbg is set we use Afg/Abg to replace NO_COLOR.
 //
 // CR/LFs are ignored and are NOT counted as one char!
@@ -1528,7 +1528,7 @@ int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, WideString &State,
   {
     // Set the cumulative text state at real index Idx
     PUSHSTRUCT ps;
-    int RetIdx = SetStateFlags(pBuf, iSize, Idx, ps, bSkipSpaces);
+    int RetIdx = SetStateFlags(pBuf, iSize, Idx, ps, bTrackSpaceColorChanges);
 
     // Print a string of initial state
     // (default for bCopyAfgAbg is "true")
@@ -1553,19 +1553,19 @@ int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, WideString &State,
   }
 }
 
-int __fastcall TUtils::GetState(WideString S, PUSHSTRUCT &psState, int Idx,
-                           bool bCopyAfgAbg, bool bSkipSpaces)
+int __fastcall TUtils::GetState(WideString wIn, PUSHSTRUCT &psState, int Idx,
+                           bool bCopyAfgAbg, bool bTrackSpaceColorChanges)
 {
-  return GetState(S.c_bstr(), S.Length(), psState, Idx,
-                                                bCopyAfgAbg, bSkipSpaces);
+  return GetState(wIn.c_bstr(), wIn.Length(), psState, Idx,
+                                                bCopyAfgAbg, bTrackSpaceColorChanges);
 }
 
 int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, PUSHSTRUCT &psState,
-                  int Idx, bool bCopyAfgAbg, bool bSkipSpaces)
+                  int Idx, bool bCopyAfgAbg, bool bTrackSpaceColorChanges)
 // pBuf is the buffer of raw-codes
 // State is returned with the state formated into a PUSHSTRUCT
 // Idx is the 0-based "Real Character index" up to which we record the state
-// If bSkipSpaces is set we continue recording to the first non-space
+// If bTrackSpaceColorChanges is true we continue recording to the first non-space
 // wchar_t past Idx. If bCopyAfgAbg is set we use Afg/Abg to replace NO_COLOR.
 //
 // CR/LFs are ignored and are NOT counted as one char!
@@ -1577,7 +1577,7 @@ int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, PUSHSTRUCT &psState,
     psState.Clear();
 
     // Set the cumulative text state at real index Idx
-    int RetIdx = SetStateFlags(pBuf, iSize, Idx, psState, bSkipSpaces);
+    int RetIdx = SetStateFlags(pBuf, iSize, Idx, psState, bTrackSpaceColorChanges);
 
     // Print a string of initial state
     // (default for bCopyAfgAbg is "true")
@@ -1601,11 +1601,11 @@ int __fastcall TUtils::GetState(wchar_t* pBuf, int iSize, PUSHSTRUCT &psState,
   }
 }
 //---------------------------------------------------------------------------
-// gets the state of any leading codes in a string
+// gets the state at the first character in a string
 PUSHSTRUCT __fastcall TUtils::GetLeadingState(WideString wIn, int &iEnd)
 {
   PUSHSTRUCT ps;
-  iEnd = SetStateFlags(wIn, STATE_MODE_FIRSTCHAR, ps, false);
+  iEnd = SetStateFlags(wIn, STATE_MODE_FIRSTCHAR, ps);
   return ps;
 }
 //---------------------------------------------------------------------------
@@ -1615,15 +1615,14 @@ PUSHSTRUCT __fastcall TUtils::GetLeadingState(WideString wIn, int &iEnd)
 // This is useful for getting the state at the last char of a string to pass
 // on to another string. It trims codes off at the end of S and returns S by
 // reference. Returns the state formatted to use as a leading state.
-WideString __fastcall TUtils::GetTrailingState(WideString &S)
+WideString __fastcall TUtils::GetTrailingState(WideString &wInOut)
 {
   WideString wState;
-  int idx = GetState(S.c_bstr(), S.Length(), wState, STATE_MODE_LASTCHAR,
-                      true, false, false);
+  int idx = GetState(wInOut, wState, STATE_MODE_LASTCHAR, true, false);
 
-  // Trim codes from original
+  // Trim codes from original (return by-reference)
   if (idx >= 0)
-    S = S.SubString(1, idx+1);
+    wInOut = wInOut.SubString(1, idx+1);
 
   return wState;
 }
@@ -1643,7 +1642,7 @@ PUSHSTRUCT __fastcall TUtils::GetTrailingState(WideString wIn,
   // get the index of the codes at end of buffer
   iStart = GetCodeIndex(wIn, STATE_MODE_ENDOFBUF);
   // set state based on those codes
-  iEnd = SetStateFlags(wIn, iStart, STATE_MODE_ENDOFBUF, ps, false);
+  iEnd = SetStateFlags(wIn, iStart, STATE_MODE_ENDOFBUF, ps);
   return ps;
 }
 //---------------------------------------------------------------------------
@@ -1651,30 +1650,30 @@ PUSHSTRUCT __fastcall TUtils::GetTrailingState(WideString wIn,
 
 // ...starts at 0 in buffer (pass WideString in)
 int __fastcall TUtils::SetStateFlags(WideString S, int iCharStopAt,
-                                      PUSHSTRUCT &ps, bool bSkipLeadingSpaces)
+                                      PUSHSTRUCT &ps, bool bTrackSpaceColorChanges)
 {
   return SetStateFlags(S.c_bstr(), S.Length(), 0, iCharStopAt,
-                                                      ps, bSkipLeadingSpaces);
+                                                      ps, bTrackSpaceColorChanges);
 }
 
 // ...starts at 0 in buffer (pass buffer address and size in)
 int __fastcall TUtils::SetStateFlags(wchar_t* pBuf, int iSize,
-                    int iCharStopAt, PUSHSTRUCT &ps, bool bSkipLeadingSpaces)
+                    int iCharStopAt, PUSHSTRUCT &ps, bool bTrackSpaceColorChanges)
 {
-  return SetStateFlags(pBuf, iSize, 0, iCharStopAt, ps, bSkipLeadingSpaces);
+  return SetStateFlags(pBuf, iSize, 0, iCharStopAt, ps, bTrackSpaceColorChanges);
 }
 
 // ...can set buffer start index (pass WideString in)
 int __fastcall TUtils::SetStateFlags(WideString S, int iBufStart,
-                    int iCharStopAt, PUSHSTRUCT &ps, bool bSkipLeadingSpaces)
+                    int iCharStopAt, PUSHSTRUCT &ps, bool bTrackSpaceColorChanges)
 {
   return SetStateFlags(S.c_bstr(), S.Length(), iBufStart,
-                                      iCharStopAt, ps, bSkipLeadingSpaces);
+                                      iCharStopAt, ps, bTrackSpaceColorChanges);
 }
 
 // ...can set buffer start index (pass buffer address and size in)
 int __fastcall TUtils::SetStateFlags(wchar_t* pBuf, int iSize,
-      int iBufStart, int iCharStopAt, PUSHSTRUCT &ps, bool bSkipLeadingSpaces)
+      int iBufStart, int iCharStopAt, PUSHSTRUCT &ps, bool bTrackSpaceColorChanges)
 // This function scans a buffer and determines the state of colors and
 // text-effects that exists at the last printable wchar_t in the buffer
 // if iCharStopAt is STATE_MODE_LASTCHAR or at the specified character at
@@ -1690,7 +1689,8 @@ int __fastcall TUtils::SetStateFlags(wchar_t* pBuf, int iSize,
 // "pBuf".
 //
 // If iCharStopAt is STATE_MODE_ENDOFBUF we do a hard scan from iBufStart to
-// iSize-1 not backing up for the last cr/lf and return the state at the end.
+// iSize-1 not backing up for the most recent cr/lf and return the state at
+// the end.
 //
 // From ProcessIRC.h...
 //
@@ -1719,6 +1719,9 @@ int __fastcall TUtils::SetStateFlags(wchar_t* pBuf, int iSize,
 // an empty string (no-state)
 //
 // CR/LFs are ignored and are NOT counted as one char!
+//
+// Setting bDoNotTrackSpaceColorChanges will cause background color changes of leading
+// space characters to not to be tracked.
 //
 // This is an important function... and I'm changing my "way of thinking"
 // about YahCoLoRiZe documents... when you send a line of text over
@@ -1776,7 +1779,7 @@ int __fastcall TUtils::SetStateFlags(wchar_t* pBuf, int iSize,
 
         CharCounter++; // Count printable chars and spaces
 
-        if (bSkipLeadingSpaces && pBuf[ii] == C_SPACE)
+        if (!bTrackSpaceColorChanges && pBuf[ii] == C_SPACE)
           continue;
 
         iSaveIdx = ii; // Save buffer-index of real wchar_t for later...
@@ -1963,6 +1966,55 @@ WideString __fastcall TUtils::PrintStateString(PUSHSTRUCT ps, bool bLeading)
   }
 
   return wState;
+}
+//---------------------------------------------------------------------------
+void __fastcall TUtils::ShowState(PUSHSTRUCT ps, int iRow, int iColumn)
+{
+  WideString wPrintStr;
+
+  if (iRow >= 0 && iColumn >= 0)
+    wPrintStr += "Line: " + String(iRow) + "," + String(iColumn);
+
+  wPrintStr += "\n\nBold: ";
+  ps.bBold ? wPrintStr += "on" : wPrintStr += "off";
+  wPrintStr += "\nUnderline: ";
+  ps.bUnderline ? wPrintStr += "on" : wPrintStr += "off";
+  wPrintStr += "\nItalics (reverse video): ";
+  ps.bItalics ? wPrintStr += "on" : wPrintStr += "off";
+  wPrintStr += "\nProtected (push/pop): ";
+  ps.pushCounter > 0 ? wPrintStr += "yes (level " + String(ps.pushCounter) + ")" : wPrintStr += "no";
+
+  if (ps.fg == NO_COLOR)
+    wPrintStr += "\n(no foreground color)";
+  else
+  {
+    BlendColor fg = utils->YcToBlendColor(ps.fg);
+    wPrintStr += "\n\nForeground RGB: " + String(fg.red) + "," +
+                    String(fg.green) + "," + String(fg.blue);
+    if (ps.fg > 0) // palette color?
+      wPrintStr += "\n(palette color index: " + String(ps.fg-1) + ")";
+  }
+
+  if (ps.bg == NO_COLOR)
+    wPrintStr += "\n(no background color)";
+  else
+  {
+    BlendColor bg = YcToBlendColor(ps.bg);
+    wPrintStr += "\n\nBackground RGB: " + String(bg.red) + "," +
+                    String(bg.green) + "," + String(bg.blue);
+    if (ps.bg > 0) // palette color?
+      wPrintStr += "\n(palette color index: " + String(ps.bg-1) + ")";
+  }
+
+  WideString wFontString = GetLocalFontStringW(ps.fontType);
+
+  if (ps.fontSize <= 0 || wFontString.IsEmpty())
+    wPrintStr += "\n(no font)";
+  else
+    wPrintStr += "\n\nFont: \"" + wFontString +
+                "\"," + String(ps.fontSize);
+
+  ShowMessageW(wPrintStr);
 }
 //---------------------------------------------------------------------------
 int __fastcall TUtils::GetNumberOfLinesSelected(bool &bPartialSelection)
@@ -2554,7 +2606,7 @@ bool __fastcall TUtils::StripLTspaces(wchar_t* &pBuf, int &iSize)
 
     // Get state at 1st non-space char
     WideString LeadState;
-    if (GetState(pBuf, endIdx, LeadState, 0, true, false, true) < 0)
+    if (GetState(pBuf, endIdx, LeadState, 0, true, false) < 0)
     {
 #if DEBUG_ON
       dts->CWrite("\r\nError in StripLTspaces():GetState()\r\n");
@@ -6690,7 +6742,7 @@ PASTESTRUCT __fastcall TUtils::CutCopyRTF(bool bCut, bool bCopy,
     WideString LeadingState;
 
     if (GetState(sl->GetString(ptSelStart.y), LeadingState,
-                                        ptSelStart.x, true, false, false) < 0)
+                                        ptSelStart.x, true, false) < 0)
     {
       ps.error = -10;
       return ps;
@@ -6707,7 +6759,7 @@ PASTESTRUCT __fastcall TUtils::CutCopyRTF(bool bCut, bool bCopy,
 
     // Pass an EndIdx that is the real-wchar_t index from the start
     // of the wText string.
-    GetState(sl->GetString(ptSelEnd.y), TrailingState, ptSelEnd.x, false, false);
+    GetState(sl->GetString(ptSelEnd.y), TrailingState, ptSelEnd.x, false);
 
     // Map the start and end indices of the RTF selected text to the
     // text in the buffer
@@ -6841,7 +6893,7 @@ PASTESTRUCT __fastcall TUtils::CutCopyRTF(bool bCut, bool bCopy,
         // Get state after chars are cut
         PUSHSTRUCT NewState;
         wTemp = sl->GetString(ptSelStart.y);
-        GetState(wTemp, NewState, ptSelStart.x, false, false);
+        GetState(wTemp, NewState, ptSelStart.x, false);
 
 //ShowHex(LeadingState);
 //ShowHex(PrintStateString(TrailingState, true));

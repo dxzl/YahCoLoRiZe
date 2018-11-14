@@ -36,12 +36,12 @@ RESDEPEN = $(RESFILES) Main.dfm DlgWingEdit.dfm DlgMonkey.dfm DlgPlay.dfm DlgSmi
   DlgChooseDict.dfm DlgFontSize.dfm FormSFDlg.dfm FormOFSSDlg.dfm \
   TaePreviewFrm.dfm DlgUnderline.dfm DlgFavColors.dfm DlgFgBgColors.dfm
 LIBFILES =
-LIBRARIES = tee40.lib teedb40.lib teeui40.lib vcldbx40.lib qrpt40.lib bcbsmp40.lib \
-  nmfast40.lib vcldb40.lib ibsmp40.lib vcljpg40.lib \
+LIBRARIES = a406_r41.lib dclusr40.lib tee40.lib teedb40.lib teeui40.lib vcldbx40.lib \
+  qrpt40.lib bcbsmp40.lib nmfast40.lib vcldb40.lib ibsmp40.lib vcljpg40.lib \
   dclocx40.lib TaeRichEditComponent.lib vclx40.lib vcl40.lib
 SPARELIBS = vcl40.lib vclx40.lib TaeRichEditComponent.lib dclocx40.lib vcljpg40.lib \
-  ibsmp40.lib vcldb40.lib nmfast40.lib bcbsmp40.lib \
-  qrpt40.lib vcldbx40.lib teeui40.lib teedb40.lib tee40.lib
+  ibsmp40.lib vcldb40.lib nmfast40.lib bcbsmp40.lib qrpt40.lib vcldbx40.lib \
+  teeui40.lib teedb40.lib tee40.lib dclusr40.lib a406_r41.lib
 PACKAGES = vclx40.bpi vcl40.bpi nmfast40.bpi Vcldb40.bpi \
   Qrpt40.bpi stride40.bpi ibsmp40.bpi bcbsmp40.bpi vcljpg40.bpi proide40.bpi \
   vcldbx40.bpi dclocx40.bpi TeeUI40.bpi teedb40.bpi tee40.bpi
@@ -82,7 +82,7 @@ ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=7
-MinorVer=40
+MinorVer=41
 Release=0
 Build=0
 Debug=0
@@ -96,13 +96,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Discrete-Time Systems
 FileDescription=YahCoLoRiZe
-FileVersion=7.40.0.0
+FileVersion=7.41.0.0
 InternalName=YahCoLoRiZe
 LegalCopyright=2018
 LegalTrademarks=YahCoLoRiZe
 OriginalFilename=Colorize.exe
 ProductName=YahCoLoRiZe Unicode
-ProductVersion=7.40
+ProductVersion=7.41
 Comments=Distribute freely... (Not FOR Commercial USE!)
 
 [HistoryLists\hlIncludePath]

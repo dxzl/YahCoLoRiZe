@@ -6,12 +6,20 @@
 //
 // Released to GitHub under GPL v3 October, 2016
 //
+//Rich Edit version, DLL, Window Class:
+// 1.0 Riched32.dll RICHEDIT_CLASS
+// 2.0 Riched20.dll RICHEDIT_CLASS
+// 3.0 Riched20.dll RICHEDIT_CLASS
+// 4.1 Msftedit.dll MSFTEDIT_CLASS
 //---------------------------------------------------------------------------
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.40" // Unicode Version
+#define REVISION "7.41" // Unicode Version
 
+// November 12, 2018, 7.41, in Effects.cpp the bDoNotTrackSpaceColorChanges flag
+// in two calls to utils->SetStateFlags() was reversed.
+//
 // November 6, 2018, 7.40, in Effects.cpp in CheckExistionCodes, old color
 // codes were not being added for the E_SET_COLORS effect.
 //

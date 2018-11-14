@@ -185,12 +185,17 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
         else
           TempIdx = 0;
 
+        // !!!!!!!Bug 11/12/2018 SetStateFlags bDoNotTrackSpaceColorChanges was
+        // incorrectly reversed in the two calls below - I renamed the flag to
+        // make clear its functionality.
+
         // Get state before leading spaces (need this here for ApplyPushPop())
+        // (Background color on spaces is not tracked! (bTrackSpaceColorChanges false))
         utils->SetStateFlags(pSaveBuf, iSaveSize, TempIdx, InitialState, false);
 
         // Get the color/font and text-effect state that exists at the first
         // printable char in the selection...
-        // (Background color on spaces is tracked! (bSkipLeadingSpaces set))
+        // (Background color on spaces is tracked! (bTrackSpaceColorChanges true))
         utils->SetStateFlags(pSaveBuf, iSaveSize, TempIdx, LeadingState, true);
 
         // Obviously we can't leave the LeadingState with NO_COLOR. When we
@@ -227,6 +232,11 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
         for (int ii = iFirst ; ii < iLast ; ii++, jj++)
           pBuf[jj] = pSaveBuf[ii];
         pBuf[jj] = C_NULL;
+
+        // added 11/12/2018...................................
+        // Get initial state - need this for (need this here for ApplyPushPop())
+        utils->SetStateFlags(pSaveBuf, iSaveSize, utils->GetCodeIndex(tae, true), InitialState);
+        // ...................................................
       }
       else // Unknown... (move edit-text to buffer...)
         utils->MoveMainTextToBuffer(pBuf, iSize);
@@ -430,8 +440,13 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
       {
         // Get a TList of pointers to SPACEITEMs that each contains the index
         // and background color of every unbroken set of space-chars in pBuf.
-        // This is used when the user has chosen NOT to apply the effect to
-        // spaces.
+        // This is used when the user has chosen to skip over spaces while
+        // applying the effect so that we can restore the original background
+        // color.
+        // (11/12/2018 found a strange case where you apply the effect and the
+        // first line happens to be all spaces except for the border chars.
+        // The background color of the highlighted portion of the line takes
+        // on the background color behind the leading border!)
         if ((SpaceBgColors = RecordSpaceBgColors(pBuf, iSize)) == NULL)
         {
           Error(-5, pSaveBuf, pBuf); // Error
@@ -549,8 +564,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
             if (!bFoundCRLF)
             {
               // Get state before leading spaces
-              utils->SetStateFlags(pBuf, iNextPar, ii,
-                               STATE_MODE_FIRSTCHAR, InitialState, false);
+              utils->SetStateFlags(pBuf, iNextPar, ii, STATE_MODE_FIRSTCHAR, InitialState, false);
 
               if (effect == E_FG_BLEND || effect == E_BG_BLEND)
               {
@@ -609,8 +623,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
             if (Pushes == 0)
             {
               PUSHSTRUCT s;
-              utils->SetStateFlags(pSaveBuf, iFirst+ii,
-                                              STATE_MODE_LASTCHAR, s, true);
+              utils->SetStateFlags(pSaveBuf, iFirst+ii, STATE_MODE_LASTCHAR, s, false);
 
               //ShowMessage(utils->PrintStateString(s));
               utils->WriteColors(s.fg, s.bg, TempStr);
@@ -1791,7 +1804,19 @@ WideString __fastcall TProcessEffect::ApplyPushPop(WideString S)
   WideString wState = WideString(CTRL_PUSH) +
                               utils->PrintStateString(psTemp, true);
 
-  S = sl->GetString(0); // get first string
+  // utils->ShowState(psTemp); // diagnostic
+
+  // skip strings with no printable characters
+  int iStartIdx = 0;
+  for (int ii = 0; ii < slCount; ii++)
+  {
+    S = sl->GetString(ii);
+    int len = utils->GetRealLength(S);
+    if (len > 0) break;
+    iStartIdx++;
+  }
+
+  S = sl->GetString(iStartIdx); // get first string
 
   // Add style flags before or after push as dictated by state at the
   // selection-start and the style control chars that immediately
@@ -1841,19 +1866,23 @@ WideString __fastcall TProcessEffect::ApplyPushPop(WideString S)
       S += CTRL_POP; // tack on this line's pop if more than one line
 
     // write the string back
-    sl->SetString(S, 0);
+    sl->SetString(S, iStartIdx);
   }
 
   // do push/pop for each of the in-between strings (if any)...
 
   if (slCount > 2)
   {
-    for (int ii = 1; ii < slCount-1; ii++)
+    for (int ii = iStartIdx+1; ii < slCount-1; ii++)
     {
       S = sl->GetString(ii);
-      S = utils->InsertW(S, CTRL_PUSH, 1); // Leading code
-      S += CTRL_POP; // Trailing code
-      sl->SetString(S, ii);
+      int len = utils->GetRealLength(S);
+      if (len > 0)
+      {
+        S = utils->InsertW(S, CTRL_PUSH, 1); // Leading code
+        S += CTRL_POP; // Trailing code
+        sl->SetString(S, ii);
+      }
     }
   }
 

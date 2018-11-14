@@ -1728,7 +1728,7 @@ const char* DS[TOTALSTRINGS] =
 
 "Renders the text \"As Is\" with no borders, wings\n"
 "or additional text-formatting of any kind.\n\n"
-"(Push/Pop regions are shown in STRIKETHROUGH!)", // 244 Hint
+"(Protected regions are shown in STRIKETHROUGH!)", // 244 Hint
 
 // Auto-linewidth (Width tab)
 "Auto", // 245
