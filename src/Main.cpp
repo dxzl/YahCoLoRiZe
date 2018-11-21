@@ -3611,10 +3611,12 @@ void __fastcall TDTSColor::AutoWidthClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::MaskEditEnter(TObject *Sender)
 {
-  TMaskEdit* p = (TMaskEdit *)Sender;
-
-  if (p->Text.IsEmpty())
+  //TMaskEdit* p = (TMaskEdit *)Sender;
+  TMaskEdit* p = dynamic_cast<TMaskEdit*>(Sender);
+  if (!p || p->Text.IsEmpty())
     return;
+
+//  ShowMessage(String(p->ClassName));
 
   if (p->Name == "IndentEdit" && p->Text.Length() == 1 && p->Text[1] == '-')
     return; // User entering a negative #
@@ -3670,19 +3672,18 @@ void __fastcall TDTSColor::MaskEditEnter(TObject *Sender)
       return;
   }
 
+  p->OnChange = NULL;
   p->Text = String(Temp);
-
-  // If user changes heights or margins while processed text
-  // is in the view, we clear a flag to keep DoProcess from
-  // automatically activating AutoWidth.
-  if (p->Name == "WidthEdit")
-    bTextWasProcessed = false;
+  p->OnChange = MaskEditEnter;
 }
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::MaskEditDblClick(TObject *Sender)
 // Restore Default
 {
-  TMaskEdit* p = (TMaskEdit *)Sender;
+  //TMaskEdit* p = (TMaskEdit *)Sender;
+  TMaskEdit* p = dynamic_cast<TMaskEdit*>(Sender);
+  if (!p)
+    return;
 
   int Temp;
 
@@ -3708,13 +3709,9 @@ void __fastcall TDTSColor::MaskEditDblClick(TObject *Sender)
   else
     return;
 
+  p->OnChange = NULL;
   p->Text = String(Temp);
-
-  // If user changes heights or margins while processed text
-  // is in the view, we clear a flag to keep DoProcess from
-  // automatically activating AutoWidth.
-  if (p->Name == "WidthEdit")
-    bTextWasProcessed = false;
+  p->OnChange = MaskEditEnter;
 }
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::MarginsClick(TObject *Sender)

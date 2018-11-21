@@ -371,12 +371,13 @@ public:
   void __fastcall WritePrevBlendColors(int PrevFG, int PrevBG, WideString &TempStr);
 
   int __fastcall WriteColors(int fg, int bg, WideString &S);
-  int __fastcall WriteColorsA(int fg, int bg, String &S);
-  String __fastcall GetColorStringA(int fg, int bg);
+  int __fastcall WriteColorsA(int fg, int bg, AnsiString &S);
+  AnsiString __fastcall GetColorStringA(int fg, int bg);
 
   int __fastcall WriteSingle(int cl, WideString &S, bool bForeground);
-  int __fastcall WriteSingleA(int cl, String &S, bool bForeground);
-  String __fastcall GetSingleColorStringA(int cl, bool bForeground);
+  int __fastcall WriteSingleA(int cl, AnsiString &S, bool bForeground);
+  int __fastcall WriteSingle(int cl, wchar_t* pBuf, bool bForeground);
+  AnsiString __fastcall GetSingleColorStringA(int cl, bool bForeground);
 
   bool __fastcall GetTaeEditColors(int &fg, int &bg, bool bAtCaret);
   bool __fastcall GetTColorDialog(TColor &Color);

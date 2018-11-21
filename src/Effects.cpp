@@ -1743,7 +1743,10 @@ void __fastcall TProcessEffect::StripFGandUnderlineCodes(wchar_t* pBuf, int &iSi
 
       // Re-write background code
       if (bg != NO_COLOR)
-        utils->WriteSingle(bg, WideString(pBuf), false);
+        // !!!!!!This is an error - we pass in a string reference here 11/20/18!!!!!!!
+        // Created a new overload for WriteSingle() in utils.cpp
+        //utils->WriteSingle(bg, WideString(pBuf), false);
+        utils->WriteSingle(bg, pBuf, false);
 
       continue;
     }

@@ -15,8 +15,15 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.41" // Unicode Version
+#define REVISION "7.42" // Unicode Version
 
+// November 20, 2018, 7.42, Fix error in StripFGandUnderlineCodes() in
+// Effects.cpp and add a new overload to WriteSingle() in utils.cpp
+// (Actually, this function is not even used, presently!)
+//
+// Fix unhandled exception when setting vertical spacing between multiple boxes
+// to 0 (a single line)
+//
 // November 12, 2018, 7.41, in Effects.cpp the bDoNotTrackSpaceColorChanges flag
 // in two calls to utils->SetStateFlags() was reversed.
 //

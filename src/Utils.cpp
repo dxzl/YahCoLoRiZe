@@ -5720,8 +5720,22 @@ int __fastcall TUtils::WriteSingle(int cl, WideString &S, bool bForeground)
 //
 // Returns length added
 {
-  String sColor = GetSingleColorStringA(cl, bForeground);
+  AnsiString sColor = GetSingleColorStringA(cl, bForeground);
   S += WideString(sColor);
+  return sColor.Length();
+}
+//---------------------------------------------------------------------------
+int __fastcall TUtils::WriteSingle(int cl, wchar_t* pBuf, bool bForeground)
+// APPENDS a color sequence to the wchar_t string at pBuf
+// Returns length added. p is not changed.
+{
+  AnsiString sColor = GetSingleColorStringA(cl, bForeground);
+
+  int len = sColor.Length();
+
+  for (int ii = 0; ii < len; ii++)
+    *pBuf++ = (wchar_t)sColor[ii];
+
   return sColor.Length();
 }
 //---------------------------------------------------------------------------
@@ -5731,19 +5745,19 @@ int __fastcall TUtils::WriteSingleA(int cl, String &S, bool bForeground)
 //
 // Returns length added
 {
-  String sColor = GetSingleColorStringA(cl, bForeground);
+  AnsiString sColor = GetSingleColorStringA(cl, bForeground);
   S += sColor;
   return sColor.Length();
 }
 //---------------------------------------------------------------------------
-String __fastcall TUtils::GetSingleColorStringA(int cl, bool bForeground)
+AnsiString __fastcall TUtils::GetSingleColorStringA(int cl, bool bForeground)
 // Returns AnsiString for the given color for either a foreground
 // or background color
 {
   if (cl == NO_COLOR)
     return "";
 
-  String ColorStr;
+  AnsiString ColorStr;
 
   if (cl <= 0) // RGB?
   {
@@ -5807,28 +5821,28 @@ int __fastcall TUtils::WriteColors(int fg, int bg, WideString &S)
 //
 // NO_COLOR in either fg or bg is handled...
 {
-  String sColor = GetColorStringA(fg, bg);
+  AnsiString sColor = GetColorStringA(fg, bg);
   S += WideString(sColor);
   return sColor.Length();
 }
 //---------------------------------------------------------------------------
-int __fastcall TUtils::WriteColorsA(int fg, int bg, String &S)
+int __fastcall TUtils::WriteColorsA(int fg, int bg, AnsiString &S)
 // APPENDS a color sequence to the provided string... so be
 // sure to clear the string first!
 //
 // NO_COLOR in either fg or bg is handled...
 {
-  String sColor = GetColorStringA(fg, bg);
+  AnsiString sColor = GetColorStringA(fg, bg);
   S += sColor;
   return sColor.Length();
 }
 //---------------------------------------------------------------------------
-String __fastcall TUtils::GetColorStringA(int fg, int bg)
+AnsiString __fastcall TUtils::GetColorStringA(int fg, int bg)
 // Returns AnsiString for the given color for foreground/background colors
 {
   bool bPrintCtrlK = true;
   bool bWroteFgRGB = false;
-  String ColorStr;
+  AnsiString ColorStr;
 
   if (fg <= 0) // RGB?
   {
