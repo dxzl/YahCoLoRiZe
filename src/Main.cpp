@@ -1514,7 +1514,7 @@ void __fastcall TDTSColor::AddEffect(int Effect, bool bUndo,
   ProcessEffect->EP0 = this->EParm0;
   ProcessEffect->EP1 = this->EParm1; // Usually foreground color
   ProcessEffect->EP2 = this->EParm2; // Usually background color
-  ProcessEffect->EP3 = this->EParm3; // Sometimes used for "mode"
+  ProcessEffect->EP3 = this->EParm3; // Sometimes used for "mode" (EM_FG/EM_BG)
   ProcessEffect->EP4 = this->EParm4; // Sometimes used for "Skip Spaces"
   ProcessEffect->EP5 = this->EParm5; // double
   ProcessEffect->FullSpectFg = this->bRgbRandFG;

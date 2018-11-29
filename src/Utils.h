@@ -125,6 +125,8 @@ public:
                                                                 int &Last);
   WideString __fastcall MoveMainTextToString(void);
   bool __fastcall MoveMainTextToBuffer(wchar_t* &pBuf, int &iSize);
+  wchar_t* __fastcall MoveTextToBuffer(wchar_t* pSource, int iFirst,
+                                                      int iLast, int &iSize);
 
   // Clipboard
   WideString __fastcall ClipboardHtmlToIrc(bool bShowStatus);
@@ -134,6 +136,7 @@ public:
   bool __fastcall CopyTextToClipboard(WideString wIn);
   void __fastcall ClearClipboard(void);
 
+  void __fastcall ShowState(PUSHSTRUCT ps, int iRow=-1, int iColumn=-1);
   WideString __fastcall PrintStateString(PUSHSTRUCT ps, bool bLeading);
 
   bool __fastcall GetIndicesAndStates(TStringsW* sl, TTaeRichEdit* re,
@@ -329,7 +332,6 @@ public:
   bool __fastcall TextContainsFormatCodes(TStringsW* sl);
   bool __fastcall TextContainsFormatCodes(WideString S);
   bool __fastcall TextContainsFormatCodes(wchar_t* pBuf, int iSize);
-  void __fastcall TUtils::ShowState(PUSHSTRUCT ps, int iRow=-1, int iColumn=-1);
 
   // Font
   int __fastcall CountFontSequence(wchar_t* pBuf, int ii, int iSize);

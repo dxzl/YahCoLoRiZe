@@ -344,23 +344,20 @@ bool __fastcall TTOCUndo::DoUndo(void)
     {
       case UNDO_EFFECT_ORIG_TEXT:
 
+        // Here we want to paste back the original text range from
+        // before the effect was applied...
         if (oc.p != NULL)
         {
-          // Here we want to paste back the original text range from
-          // before the effect was applied...
-          if (oc.p != NULL)
-          {
-            TStringsW* sl = (TStringsW*)oc.p;
+          TStringsW* sl = (TStringsW*)oc.p;
 
-            // Set to view prior to Process
-            sl->Text = utils->InsertW(sl->Text, ui->s, ui->Index+1);
+          // Set to view prior to Process
+          sl->Text = utils->InsertW(sl->Text, ui->s, ui->Index+1);
 
-            if (oc.view == V_RTF)
-              utils->ConvertToRtf(sl, DTSColor->MS_RTF);
+          if (oc.view == V_RTF)
+            utils->ConvertToRtf(sl, DTSColor->MS_RTF);
 
-            DTSColor->LoadView(oc.view);
-            tae->SelStart = oc.selStart;
-          }
+          DTSColor->LoadView(oc.view);
+          tae->SelStart = oc.selStart;
         }
 
       break;
@@ -375,6 +372,7 @@ bool __fastcall TTOCUndo::DoUndo(void)
 
           // Set to view prior to Process
           sl->Text = utils->DeleteW(sl->Text, ui->Index+1, ui->Length);
+          // utils->ShowMessageW(sl->Text);
         }
 
       break;

@@ -14,8 +14,8 @@
 #define UNDO_DEL               3 // remove char
 #define UNDO_INS               4 // add char
 #define UNDO_PROCESS           5 // pressed Process or Show
-#define UNDO_EFFECT_ORIG_TEXT  6 // step 1 save orig selected text in String s
-#define UNDO_EFFECT_NEW_TEXT   7 // step 2 is the range of modified text to cut
+#define UNDO_EFFECT_ORIG_TEXT  6 // step 1 save orig selected text we want to restore (in String s)
+#define UNDO_EFFECT_NEW_TEXT   7 // step 2 is the range of modified "new" text we will need to remove
 #define UNDO_FG_COLOR          8
 #define UNDO_BG_COLOR          9
 #define UNDO_WING_COLOR       10

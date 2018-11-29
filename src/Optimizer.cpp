@@ -474,7 +474,6 @@ WideString __fastcall TOptimizer::SetFormatCodes(PUSHSTRUCT State,
     }
   }
   catch(...){}
-
   return s;
 }
 //---------------------------------------------------------------------------

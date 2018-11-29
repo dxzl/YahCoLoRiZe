@@ -427,23 +427,8 @@ int __fastcall TConvertToIRC::Execute(bool bShowStatus)
           // Strip-out CTRL_Os (they will build up!)
           if (c == CTRL_O)
           {
-            if (State.bBold)
-            {
-              TextLine += WideString(CTRL_B);
-              State.bBold = false;
-            }
-
-            if (State.bUnderline)
-            {
-              TextLine += WideString(CTRL_U);
-              State.bUnderline = false;
-            }
-
-            if (State.bItalics)
-            {
-              TextLine += WideString(CTRL_R);
-              State.bItalics = false;
-            }
+            // !!!!!!!!!!!! Changed 11/26/2018
+            ProperlyTerminateBoldUnderlineItalics(TextLine);
 
             RestoreFGBG(TextLine);
             RestoreFontSize(TextLine);
@@ -463,6 +448,10 @@ int __fastcall TConvertToIRC::Execute(bool bShowStatus)
           {
             iBuf++;
             bFoundCRLF = true;
+
+            // We automatically stop bold, underline or italics at a hard line break
+            // !!!!!!!!!!!! Added 11/26/2018
+            ProperlyTerminateBoldUnderlineItalics(TextLine);
 
             // Look for a paragraph
             if (utils->FoundCRLF(pBuf, iSize, iBuf))
@@ -521,6 +510,7 @@ int __fastcall TConvertToIRC::Execute(bool bShowStatus)
                   iBuf++; // skip the C_LF
                 else
                   EditStrings->Add(""); // add cr/lf after PAGE_BREAK
+
               }
             }
 
@@ -1150,6 +1140,28 @@ void __fastcall TConvertToIRC::InitBoldUnderlineReverseForNextLine(void)
 
     if (!bOrigTextHasItalics && dts->cStyle.Contains(fsItalic))
       State.bItalics = !NewState.bItalics;
+  }
+}
+//----------------------------------------------------------------------------
+// !!!!!!!!!!!! Added 11/26/2018
+void __fastcall TConvertToIRC::ProperlyTerminateBoldUnderlineItalics(WideString &TempStr)
+{
+  if (State.bBold)
+  {
+    TempStr += WideString(CTRL_B);
+    State.bBold = false;
+  }
+
+  if (State.bUnderline)
+  {
+    TempStr += WideString(CTRL_U);
+    State.bUnderline = false;
+  }
+
+  if (State.bItalics)
+  {
+    TempStr += WideString(CTRL_R);
+    State.bItalics = false;
   }
 }
 //----------------------------------------------------------------------------

@@ -1303,6 +1303,24 @@ bool __fastcall TUtils::MoveMainTextToBuffer(wchar_t* &pBuf, int &iSize)
   }
 }
 //---------------------------------------------------------------------------
+// Create a new buffer of wchar_t and move text from iFirst to iLast into it
+// from pSource. Returns a new buffer and iSize is returned by-reference.
+wchar_t* __fastcall TUtils::MoveTextToBuffer(wchar_t* pSource, int iFirst,
+                                                      int iLast, int &iSize)
+{
+  try
+  {
+    iSize = iLast-iFirst; // return by reference
+    wchar_t* pDest = new wchar_t[iSize+1];
+    int jj = 0;
+    for (int ii = iFirst; ii < iLast; ii++, jj++)
+      pDest[jj] = pSource[ii];
+    pDest[jj] = C_NULL;
+    return pDest;
+  }
+  catch(...) { return NULL; }
+}
+//---------------------------------------------------------------------------
 // Overloaded
 bool __fastcall TUtils::GetIndicesAndStates(TStringsW* sl, TTaeRichEdit* re,
                                       PUSHSTRUCT &psFirst, PUSHSTRUCT &psLast)
@@ -1822,7 +1840,11 @@ int __fastcall TUtils::SetStateFlags(wchar_t* pBuf, int iSize,
       {
         if (bNeedToInitState)
         {
-          tps.Clear();
+          // !!!!!!!! 11/27/2018 don't want to clear cr/lf counter, index, pushcounter...
+          //tps.Clear();
+          tps.ClearColors();
+          tps.ClearFont();
+          tps.ClearStyle();
           bNeedToInitState = false;
         }
       }
@@ -3328,8 +3350,7 @@ int __fastcall TUtils::GetLastNoncodeBufferIdx(wchar_t * pBuf, int iSize)
   return LastIndex;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TUtils::GetSelectedZoneIndices(TTaeRichEdit* re,
-                                                    int &First, int &Last)
+bool __fastcall TUtils::GetSelectedZoneIndices(TTaeRichEdit* re, int &First, int &Last)
 // Get 0-based indices into the re->TextW string based on the selected
 // zone. Each newline is one character (a CR).
 {
@@ -3746,7 +3767,7 @@ int __fastcall TUtils::GetCodeIndex(wchar_t* pBuf, int iSize,
 // Returns the 0-based index of the printable wchar_t (or cr/lf) in pBuf
 // or -1 if error. Returns iSize if no real chars were found
 // or the RealStart given is not in the buffer.
-// Set bCodeIdx to return the index of the format-codes before the desired
+// Set bCodes to return the index of the format-codes before the desired
 // wchar_t or cr/lf at RealStart.
 //
 // To get the index at the last char:
@@ -7276,7 +7297,8 @@ int __fastcall TUtils::ConvertToRtf(TStringsW* slIn, int msOut,
                  TTaeRichEdit* re, bool bSetBlackWhiteColors, bool bShowStatus)
 // This just is to pass a NULL in msOut...
 {
-  return ConvertToRtf(slIn->Text, (TMemoryStream*)msOut, re,
+  TMemoryStream* dummyRefP = (TMemoryStream*)msOut;
+  return ConvertToRtf(slIn->Text, dummyRefP, re,
                                      bSetBlackWhiteColors, bShowStatus);
 }
 
@@ -7284,7 +7306,8 @@ int __fastcall TUtils::ConvertToRtf(WideString S, int msOut,
               TTaeRichEdit* re, bool bSetBlackWhiteColors, bool bShowStatus)
 // This just is to pass a NULL in msOut...
 {
-  return ConvertToRtf(S, (TMemoryStream*)msOut, re,
+  TMemoryStream* dummyRefP = (TMemoryStream*)msOut;
+  return ConvertToRtf(S, dummyRefP, re,
                                     bSetBlackWhiteColors, bShowStatus);
 }
 

@@ -31,6 +31,7 @@ private:
   void __fastcall SetLineWidth(int Lmargin, int Rmargin, int Indent);
   int __fastcall SelectWings(int NextWordLen);
   void __fastcall ProperlyTerminateEffects(void);
+  void __fastcall ProperlyTerminateBoldUnderlineItalics(WideString &TempStr);
   int __fastcall AddScriptingChars(WideString ColorFormatStr);
   void __fastcall AddWingToText(WideString ColorFormatStr);
   int __fastcall LargestWingLength(void);

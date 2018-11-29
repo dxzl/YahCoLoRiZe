@@ -15,8 +15,13 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.42" // Unicode Version
+#define REVISION "7.43" // Unicode Version
 
+// November 28, 2018, 7.43, Add ProperlyTerminateBoldUnderlineItalics() to
+// ConvertToIRC.cpp (because optimizer strips trailing codes and we need them
+// when adding wings/borders). Add computation of LeadingState and TrailingState
+// for V_IRC/V_ORG views in Effects.cpp so that ProcessStyle() works.
+//
 // November 20, 2018, 7.42, Fix error in StripFGandUnderlineCodes() in
 // Effects.cpp and add a new overload to WriteSingle() in utils.cpp
 // (Actually, this function is not even used, presently!)
@@ -30,6 +35,11 @@
 // November 6, 2018, 7.40, in Effects.cpp in CheckExistionCodes, old color
 // codes were not being added for the E_SET_COLORS effect.
 //
+// color/font codes, not after. Plus the wrong states were being used. Also,
+// E_SET_COLORS needed to set PrevFG and PrevBG so a pop would set the correct
+// color.
+//
+// December 21, 2015, in effects ApplyPushPop, pop needed to come before the
 // color/font codes, not after. Plus the wrong states were being used. Also,
 // E_SET_COLORS needed to set PrevFG and PrevBG so a pop would set the correct
 // color.

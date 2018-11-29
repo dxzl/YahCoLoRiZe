@@ -354,7 +354,9 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
 
           if (bFgNoColor && bBgNoColor)
           {
-            // Turn off colors or go to previous colors
+            // Turn off colors or go to previous colors??? TODO
+            //sLine += "\\pard"; // default paragraph properties
+            //State.ClearColors();
           }
           else
           {
@@ -365,8 +367,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
 
               // Write space if next char is not a color or font-size or newline
               // and we aren't going to write a bg color...
-              if (bBgNoColor && ii+1 < size &&
-                                       !utils->AnySpecialChar(buf[ii+1]))
+              if (bBgNoColor && ii+1 < size && !utils->AnySpecialChar(buf[ii+1]))
                 sLine += " ";
             }
 
@@ -394,7 +395,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
 
             // Problem I am having: If the user wants to delete a page-break
             // while in the RTF view - there literally is "nothing to delete"
-            // because the RTF DLL simpley ignores the \page...
+            // because the RTF DLL simply ignores the \page...
             //
             // We don't want to insert a "real-character" into the document
             //sLine += "\\page\\u9810P";
@@ -412,7 +413,6 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
   // \pagebreak with \page - the \page has a "built-in" \par
   // so we end up printing one line down from the top of the second page!
             sLine += "\\cf0\\highlight0 \\\\pagebreak\\par";
-
           }
           else
             sLine += "\\par"; // (note: inserting a \line puts in a C_VT char)

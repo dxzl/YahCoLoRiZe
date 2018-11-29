@@ -75,13 +75,13 @@ private:
   int Pushes;
 
   int effect;
-  int colorCounter, colorCount, maxColors;
+  int colorCounter, colorCount;
 
   // Internal vars for properties
-  bool bFullSpectFg, bFullSpectBg;
-  int returnValue, returnDelta;
-  int ep0, ep1, ep2, ep3, ep4;
-  double ep5;
+  bool m_bFullSpectFg, m_bFullSpectBg;
+  int m_returnValue, m_returnDelta, m_maxColors;
+  int m_ep0, m_ep1, m_ep2, m_ep3, m_ep4;
+  double m_ep5;
 
   TList* SpaceBgColors;
 
@@ -93,18 +93,17 @@ public:
 
   void __fastcall Execute(bool bShowStatus);
 
-  __property bool FullSpectFg = { write = bFullSpectFg };
-  __property bool FullSpectBg = { write = bFullSpectBg };
-
-  __property int ReturnValue = { read = returnValue };
-  __property int ReturnDelta = { read = returnDelta };
-  __property int EP0 = { write = ep0 };
-  __property int EP1 = { write = ep1 };
-  __property int EP2 = { write = ep2 };
-  __property int EP3 = { write = ep3 };
-  __property int EP4 = { write = ep4 };
-  __property double EP5 = { write = ep5 };
-  __property int MaxColors = { read = maxColors, write = maxColors };
+  __property bool FullSpectFg = { write = m_bFullSpectFg };
+  __property bool FullSpectBg = { write = m_bFullSpectBg };
+  __property int ReturnValue = { read = m_returnValue };
+  __property int ReturnDelta = { read = m_returnDelta };
+  __property int EP0 = { write = m_ep0 };
+  __property int EP1 = { write = m_ep1 };
+  __property int EP2 = { write = m_ep2 };
+  __property int EP3 = { write = m_ep3 };
+  __property int EP4 = { write = m_ep4 };
+  __property double EP5 = { write = m_ep5 };
+  __property int MaxColors = { read = m_maxColors, write = m_maxColors };
 };
 #endif
 
