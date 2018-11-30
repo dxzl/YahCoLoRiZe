@@ -78,7 +78,7 @@ private:
   int colorCounter, colorCount;
 
   // Internal vars for properties
-  bool m_bFullSpectFg, m_bFullSpectBg;
+  bool m_bFullSpectFg, m_bFullSpectBg, m_allowUndo;
   int m_returnValue, m_returnDelta, m_maxColors;
   int m_ep0, m_ep1, m_ep2, m_ep3, m_ep4;
   double m_ep5;
@@ -93,6 +93,7 @@ public:
 
   void __fastcall Execute(bool bShowStatus);
 
+  __property bool AllowUndo = { write = m_allowUndo };
   __property bool FullSpectFg = { write = m_bFullSpectFg };
   __property bool FullSpectBg = { write = m_bFullSpectBg };
   __property int ReturnValue = { read = m_returnValue };

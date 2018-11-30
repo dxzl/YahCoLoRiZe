@@ -254,8 +254,7 @@ void __fastcall TTOCUndo::Add(int Type, int View, int Len, void* P, TPoint Pos,
       this->UndoList->Delete(0); // Delete oldest
 
     // Add new
-    pTList->Add(new UNDOSHORT(Type, View, Len, P, Pos, Loc, C,
-                                                            bInsert, bChain));
+    pTList->Add(new UNDOSHORT(Type, View, Len, P, Pos, Loc, C, bInsert, bChain));
 
     if (!DTSColor->UndoEnabled)
       DTSColor->UndoEnabled = true;
@@ -322,8 +321,7 @@ bool __fastcall TTOCUndo::DoUndo(void)
     // get to local var before we possibly re-cast to the "us" pointer...
     int type = ui->Type;
 
-    if (pTList->Count == 1 && (type == UNDO_PROCESS ||
-                                                type == UNDO_SHOW))
+    if (pTList->Count == 1 && (type == UNDO_PROCESS || type == UNDO_SHOW))
     {
       if (utils->ShowMessageU(DTSColor->Handle, DS[180],
                       MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) == IDNO)
@@ -342,7 +340,20 @@ bool __fastcall TTOCUndo::DoUndo(void)
 
     switch (type)
     {
-      case UNDO_EFFECT_ORIG_TEXT:
+      case UNDO_EFFECT_NEW_TEXT: // first undo-step of two for undoing an effect
+
+        // Here we want to cut out the effect-text block from SL_IRC then
+        // chain to UNDO_EFFECT_ORIG_TEXT to paste back the original text.
+        if (oc.p != NULL)
+        {
+          TStringsW* sl = (TStringsW*)oc.p; // this will point to dts->SL_IRC
+          sl->Text = utils->DeleteW(sl->Text, ui->Index+1, ui->Length);
+          // utils->ShowMessageW(sl->Text);
+        }
+
+      break;
+
+      case UNDO_EFFECT_ORIG_TEXT: // second undo step of two for undoing an effect
 
         // Here we want to paste back the original text range from
         // before the effect was applied...
@@ -358,21 +369,6 @@ bool __fastcall TTOCUndo::DoUndo(void)
 
           DTSColor->LoadView(oc.view);
           tae->SelStart = oc.selStart;
-        }
-
-      break;
-
-      case UNDO_EFFECT_NEW_TEXT:
-
-        // Here we want to cut out the effect-text then chain-up to
-        // UNDO_EFFECT_ORIG_TEXT and paste in String s.
-        if (oc.p != NULL)
-        {
-          TStringsW* sl = (TStringsW*)oc.p;
-
-          // Set to view prior to Process
-          sl->Text = utils->DeleteW(sl->Text, ui->Index+1, ui->Length);
-          // utils->ShowMessageW(sl->Text);
         }
 
       break;

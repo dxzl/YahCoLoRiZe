@@ -39,10 +39,14 @@ __fastcall TProcessEffect::TProcessEffect(TComponent* Owner, int Effect)
   // Property vars
   m_returnValue = -1; // user cancel
   m_returnDelta = 0;
+  m_maxColors = -1; // no limit
+
+  m_allowUndo = true;
+  m_bFullSpectFg = false;
+  m_bFullSpectBg = false;
 
   colorCounter = 1;
   colorCount = 0;
-  m_maxColors = -1; // no limit
 
   SpaceBgColors = new TList();
 }
@@ -80,8 +84,6 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
   wchar_t PreviousChar = C_NULL;
   time_t t;
 
-  int View = tae->View;
-
   try
   {
     try
@@ -90,9 +92,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
       if (bShowStatus)
         dts->CpShow(STATUS[1]);
 
-      ONCHANGEW oc = utils->GetInfoOC(tae, dts->SL_IRC);
-
-      if (View == V_ORG)
+      if (utils->IsOrgView())
       {
         // Move the MS_ORG Stream to a buffer
         iSaveSize = dts->SL_ORG->TotalLength;
@@ -173,6 +173,13 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
       if (bShowStatus)
         dts->CpShow(STATUS[5]);
 
+      // Set the first part of a chained Undo UNDO_EFFECT_ORIG_TEXT. The pointer
+      // to either SL_ORG or SL_IRC is in the oc struct. The original, unchanged
+      // block of text is passed as WideString(pBuf)
+      ONCHANGEW oc = utils->GetInfoOC(tae, dts->SL_IRC);
+      if (m_allowUndo)
+        TOCUndo->Add(UNDO_EFFECT_ORIG_TEXT, iFirst, iSize, oc, WideString(pBuf));
+
       InitialState.Clear();
       LeadingState.Clear();
       TrailingState.Clear();
@@ -223,11 +230,6 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
         if (utils->IsRtfView())
           AddInitialCodes(m_ep3, LeadingState, TempStr);
       }
-
-      // Set the first part of a chained Undo UNDO_EFFECT_ORIG_TEXT. The pointer
-      // to either SL_ORG or SL_IRC is in the oc struct. The original, unchanged
-      // block of text is passed as WideString(pBuf)
-      TOCUndo->Add(UNDO_EFFECT_ORIG_TEXT, iFirst, iSize, oc, WideString(pBuf));
 
       // convert \pagebreak into C_FF before processing (this avoids having
       // the effect applied to a "\pagebreak" string and allows us to strip
@@ -574,7 +576,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
                 // 7 colors!) Setting colorCounter = colorCount causes a new
                 // color to be written before the next char is printed
                 colorCounter = colorCount;
-              else if (View == V_RTF)
+              else if (utils->IsRtfView())
                 // Write codes for cases where there are none
                 AddInitialCodes(m_ep3, InitialState, TempStr);
             }
@@ -1274,7 +1276,7 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
       oc.p = NULL; // Undo (no string-list!)
       int UndoIdx = 0;
 
-      if (View == V_RTF || View == V_IRC || View == V_ORG)
+      if (utils->IsRtfIrcOrgView())
       {
         try
         {
@@ -1357,10 +1359,10 @@ void __fastcall TProcessEffect::Execute(bool bShowStatus)
           tae->TextW = TempStr;
       }
 
-      // Set the second part of a chained Undo UNDO_EFFECT_NEW_TEXT with
-      // the range of new effect-text to delete on Undo
-      TOCUndo->Add(UNDO_EFFECT_NEW_TEXT, UndoIdx, TempStr.Length(),
-                                                          oc, "", true);
+      // Set the second part of a chained Undo (flag set true), UNDO_EFFECT_NEW_TEXT
+      // with the range of new effect-text to delete on Undo
+      if (m_allowUndo)
+        TOCUndo->Add(UNDO_EFFECT_NEW_TEXT, UndoIdx, TempStr.Length(), oc, "", true);
 
       // m_returnValue is 0 if no errors or -1 if user pressed ESC
       // 1 if Push/Pop warning

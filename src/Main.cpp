@@ -1517,8 +1517,10 @@ void __fastcall TDTSColor::AddEffect(int Effect, bool bUndo,
   ProcessEffect->EP3 = this->EParm3; // Sometimes used for "mode" (EM_FG/EM_BG)
   ProcessEffect->EP4 = this->EParm4; // Sometimes used for "Skip Spaces"
   ProcessEffect->EP5 = this->EParm5; // double
+
   ProcessEffect->FullSpectFg = this->bRgbRandFG;
   ProcessEffect->FullSpectBg = this->bRgbRandBG;
+  ProcessEffect->AllowUndo = bUndo;
 
   // this->MaxColors is only set now after invoking MorphDlg and it's only
   // used by the Morph effect right now
@@ -2999,7 +3001,7 @@ void __fastcall TDTSColor::DoP(bool bShowStatus)
         }
 
         // This will return with highlighted codes in the V_IRC view state
-        if (!DoBlend(E_FG_BLEND, false)) // Don't need write to MS_ORG!
+        if (!DoBlend(E_FG_BLEND, false)) // Don't want undos
         {
           ProcessError(2);
           return; // error
@@ -3024,7 +3026,7 @@ void __fastcall TDTSColor::DoP(bool bShowStatus)
         }
 
         // This will return with highlighted codes in the V_IRC view state
-        if (!DoBlend(E_BG_BLEND, false)) // Don't need write to MS_ORG!
+        if (!DoBlend(E_BG_BLEND, false)) // Don't want undos
         {
           ProcessError(4);
           return; // error
@@ -3860,8 +3862,8 @@ void __fastcall TDTSColor::SetFgColor(void)
   }
 
   // Invoke color-set effect on selected text
-  if (tae->SelLength && tae->LockCounter == 0 &&
-      (C < IRCCANCEL || C == IRCRANDOM || C == IRCHORIZBLEND) && utils->IsRtfIrcOrgView())
+  if (tae->SelLength && tae->LockCounter == 0 && utils->IsRtfIrcOrgView() &&
+      (C < IRCCANCEL || C == IRCRANDOM || C == IRCHORIZBLEND || C == IRCVERTBLEND))
   {
     // Invoke color-set effect on selected text
     if (C == IRCRANDOM)
@@ -3872,8 +3874,26 @@ void __fastcall TDTSColor::SetFgColor(void)
     EParm2 = NO_COLOR;
     EParm3 = EM_FG;
 
-    if (C == IRCHORIZBLEND)
-      AddEffect(E_FG_BLEND);
+// 11/29/2018 add response to vertical blend button
+    if (C == IRCVERTBLEND)
+    {
+      if (!CreateBlendEngine(BLEND_VERT_FG))
+        return;
+
+      if (!DoBlend(E_FG_BLEND, true)) // allow undos
+        ProcessError(12);
+    }
+    else if (C == IRCHORIZBLEND)
+//      AddEffect(E_FG_BLEND);
+// 11/29/2018 blend on click of Horiz Blend button in color
+// dialog was not working !!!!!!!!!!!!!!!
+    {
+      if (!CreateBlendEngine(BLEND_FG))
+        return;
+
+      if (!DoBlend(E_FG_BLEND, true)) // allow undos
+        ProcessError(11);
+    }
     else
       AddEffect(E_SET_COLORS);
 
@@ -3911,9 +3931,8 @@ void __fastcall TDTSColor::SetBgColor(void)
   }
 
   // Invoke color-set effect on selected text
-  if (tae->SelLength && tae->LockCounter == 0 &&
-      (C < IRCCANCEL || C == IRCRANDOM || C == IRCHORIZBLEND) &&
-          (tae->View == V_RTF || tae->View == V_IRC || tae->View == V_ORG))
+  if (tae->SelLength && tae->LockCounter == 0 && utils->IsRtfIrcOrgView() &&
+      (C < IRCCANCEL || C == IRCRANDOM || C == IRCHORIZBLEND || C == IRCVERTBLEND))
   {
     // Invoke color-set effect on selected text
     if (C == IRCRANDOM)
@@ -3924,8 +3943,26 @@ void __fastcall TDTSColor::SetBgColor(void)
     EParm1 = NO_COLOR;
     EParm3 = EM_BG;
 
-    if (C == IRCHORIZBLEND)
-      AddEffect(E_BG_BLEND);
+// 11/29/2018 add response to vertical blend button
+    if (C == IRCVERTBLEND)
+    {
+      if (!CreateBlendEngine(BLEND_VERT_BG))
+        return;
+
+      if (!DoBlend(E_BG_BLEND, true)) // allow undos
+        ProcessError(12);
+    }
+    else if (C == IRCHORIZBLEND)
+//      AddEffect(E_BG_BLEND);
+// 11/29/2018 blend on click of Horiz Blend button in color
+// dialog was not working !!!!!!!!!!!!!!!
+    {
+      if (!CreateBlendEngine(BLEND_BG))
+        return;
+
+      if (!DoBlend(E_BG_BLEND, true)) // allow undos
+        ProcessError(12);
+    }
     else
       AddEffect(E_SET_COLORS);
 
@@ -3955,9 +3992,11 @@ void __fastcall TDTSColor::SetWingColor(void)
 {
   int C = utils->SelectCustomColor(String(DS[68]), WingColorPanel->Color, COLOR_FORM_WING);
 
-  if (C == IRCCANCEL) return;
+  if (C == IRCCANCEL)
+    return;
 
-  if (Background == C && C != IRCVERTBLEND && C != IRCHORIZBLEND && C != IRCRANDOM) utils->ShowMessageU(String(DS[69]));
+  if (Background == C && C != IRCVERTBLEND && C != IRCHORIZBLEND && C != IRCRANDOM)
+    utils->ShowMessageU(String(DS[69]));
 
   if (TOCUndo != NULL)
   {
@@ -8484,7 +8523,7 @@ void __fastcall TDTSColor::BlendFGMenu(TObject *Sender)
       if (!CreateBlendEngine(BLEND_FG))
         return;
 
-      if (!DoBlend(E_FG_BLEND, true))
+      if (!DoBlend(E_FG_BLEND, true)) // allow undos
         ProcessError(11);
     }
   }
@@ -8509,7 +8548,7 @@ void __fastcall TDTSColor::BlendBGMenu(TObject *Sender)
       if (!CreateBlendEngine(BLEND_BG))
         return;
 
-      if (!DoBlend(E_BG_BLEND, true))
+      if (!DoBlend(E_BG_BLEND, true)) // allow undos
         ProcessError(12);
     }
   }
@@ -8526,13 +8565,12 @@ bool __fastcall TDTSColor::DoBlend(int Type, bool bUndo)
     else
       EParm3 = EM_BG;
 
-    // If view is RTF, we don't want to save the undo-buffer
-    // but we do want to "re-process" the text to which we are
+    // If view is RTF we want to "re-process" the text to which we are
     // adding the new effect.
     if (tae->View == V_RTF)
-      AddEffect(Type, false, true);
+      AddEffect(Type, bUndo, true, true);
     else // Clear "bReprocess" or we recursivelly loop!
-      AddEffect(Type, bUndo, false);
+      AddEffect(Type, bUndo, false, true);
 
     if (!DeleteBlenderObjects())
       return false;

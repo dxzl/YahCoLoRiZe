@@ -15,8 +15,14 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.43" // Unicode Version
+#define REVISION "7.44" // Unicode Version
 
+// November 29, 2018, 7.44, Color dialog horizontal and vertical blend
+// buttons to apply blend to selected zones was non-functional. Fixed.
+// Fixed the bUndo flag passed to DoBlend() in Main.cpp - flag now
+// prevents undo-points from being set in Effects.cpp when a blend is
+// being performed as part of a DoProcess() (which has its own Undo-point).
+//
 // November 28, 2018, 7.43, Add ProperlyTerminateBoldUnderlineItalics() to
 // ConvertToIRC.cpp (because optimizer strips trailing codes and we need them
 // when adding wings/borders). Add computation of LeadingState and TrailingState
