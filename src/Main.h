@@ -15,8 +15,12 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.44" // Unicode Version
+#define REVISION "7.45" // Unicode Version
 
+// December 8, 2018, 7.45, Entering Unicode characters manually by typing four
+// hex digits and Alt+X was not working. Changes made to TaeEditChange(). Also
+// took out an unnecessary space in the code-highlighting in ConvertToHLT.cpp.
+//
 // November 29, 2018, 7.44, Color dialog horizontal and vertical blend
 // buttons to apply blend to selected zones was non-functional. Fixed.
 // Fixed the bUndo flag passed to DoBlend() in Main.cpp - flag now

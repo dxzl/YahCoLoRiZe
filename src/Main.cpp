@@ -859,7 +859,12 @@ void __fastcall TDTSColor::FormDestroy(TObject *Sender)
     if (GDictList) delete GDictList;
     if (pluginClass) delete pluginClass;
     if (pluginName) delete pluginName;
-    if (PrintPreview) delete PrintPreview;
+
+    if (TaePreviewForm)
+    {
+      TaePreviewForm->Release();
+      TaePreviewForm = NULL;
+    }
 
     if (palette) delete [] palette;
 
@@ -5592,6 +5597,20 @@ void __fastcall TDTSColor::TaeEditKeyDown(TObject *Sender, WORD &Key, TShiftStat
     tae->SelAttributes->BackColor = clWindow;
   }
 
+  // Moved here ----------- 12/6/2018
+  // Here, we want to see if the next OnChange from TaeRichEdit
+  // is a deltaLength of -1 to -4 chars... that means the user typed in
+  // "fe" and hit Alt-X or typed in "0abcd" and hit Alt-x and those chars
+  // were replaced by a single Unicode char.
+  if (this->bUnicodeKeySequence)
+    this->bUnicodeKeySequence = false;
+  else if (Key == 'X' && Shift.Contains(ssAlt))
+  {
+    this->bUnicodeKeySequence = true;
+    return;
+  }
+  // --------------------- 12/6/2018
+
   if (tae->Lines->Count == 0)
     return;
 
@@ -5673,14 +5692,6 @@ void __fastcall TDTSColor::TaeEditKeyDown(TObject *Sender, WORD &Key, TShiftStat
 
     Key = 0;
   }
-  // Here, we want to see if the next OnChange from TaeRichEdit
-  // is a deltaLength of -1 to -4 chars... that means the user typed in
-  // "fe" and hit Alt-X or typed in "0abcd" and hit Alt-x and those chars
-  // were replaced by a single Unicode char.
-  else if (this->bUnicodeKeySequence)
-    this->bUnicodeKeySequence = false;
-  else if (Key == 'X' && Shift.Contains(ssAlt))
-    this->bUnicodeKeySequence = true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::PrintShortLineCount(void)
@@ -8391,7 +8402,7 @@ void __fastcall TDTSColor::MenuSetFontClick(TObject *Sender)
   FontDlg->Font->Pitch = cPitch;
   FontDlg->Font->Size = cSize;
   FontDlg->Font->Style = cStyle;
-
+  
   if (FontDlg->Execute())
   {
     if (tae->View == V_RTF)
@@ -12155,6 +12166,8 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
   }
 
   // User deleted chars? (1 or 2 for cr/lf)
+  // if user pressed Alt-X after a sequence of hex digits, deltaLength,
+  // if 4 hex digits, will be -3.
   if (oc.deltaLength < 0)
   {
     // NOTE: When chars have been deleted from the Rich Edit control, there
@@ -12185,38 +12198,53 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
     // Do part of all of this here and the rest after we queue the current oc struct...
     if (this->bUnicodeKeySequence)
     {
-      // since we replaced the 1st hex-digit with the char in the rich-edit
-      // control, we are 1 short of the chars we need to remove from the
-      // IRC TStringsW() list... compensate
-      oc.deltaLength += -1;
-      oc.selStart -= 1;
-    }
+      // added 12/6/18 fix manual unicode entry in non-rtf views:
+      ONCHANGEW ocNew = oc;
 
-    ThreadOnChange->Add(oc);
+      // The user has pressed Alt-X and caused 4 chars entered into SL_IRC or
+      // SL_ORG to be replaced by a single unicode char which has already been
+      // replaced automatically by the rich-edit control in the view we are in.
+      //
+      // oc.pos has cursor position before chars were deleted or after chars were added...
+      //
+      // ThreadOnChange.cpp uses oc.pos to delete or add chars... so we
+      // need to tell it where the virtual caret would be in SL_IRC, at the
+      // start of the (usually 4) chars to be deleted. We want deltaLength to
+      // be -4. It's currently -3 if 4 hex chars were typed...
+      ocNew.deltaLength += -1;
+      ocNew.selStart -= 1;
+      ocNew.pos.x -= 1;
 
-    // Queue to our background thread to add/remove from SL_IRC or SL_ORG
-    if (this->bUnicodeKeySequence)
-    {
-      WideString sCaretChar = tae->GetRangeW(oc.selStart, oc.selStart+1);
+      ThreadOnChange->Add(ocNew); // add event to remove unicode hex digits
+
+      WideString sCaretChar = tae->GetRangeW(oc.selStart-1, oc.selStart);
 
       if (sCaretChar.Length() == 1)
       {
-        ONCHANGEW ocNew = oc;
-        ocNew.selStart = oc.selStart + 1;
-        ocNew.c[0] = sCaretChar[1];
+        ocNew = oc; // start over
+
+        ocNew.c[0] = sCaretChar[1]; // our new wchar_t unicode char
+        ocNew.c[1] = L'\0'; // terminate string!
+
+        // the caret in oc and selStart are already positioned as if
+        // one char was typed... but deltaLength is wrong now...
         ocNew.deltaLength = 1;
+
 //#if DEBUG_ON
 //        CWrite("\r\nadding: " + IntToHex((int)ocNew.c, 5) +
 //          " selStart: " + String(oc.selStart) + "\r\n");
 //#endif
-
         // Queue to our background thread to add new unicode char after it deletes
         // the hex-code chars.
         ThreadOnChange->Add(ocNew);
       }
+      else
+        ThreadOnChange->Add(oc);
 
       this->bUnicodeKeySequence = false;
     }
+    else
+      ThreadOnChange->Add(oc);
 
     if (oc.length == 0)
     {

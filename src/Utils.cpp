@@ -338,7 +338,10 @@ ONCHANGEW __fastcall TUtils::GetInfoOC(TTaeRichEdit* re)
     oc.pos.y = 0;
   }
 
-  oc.c[0] = C_NULL;
+  // null entire oc buffer! 12/7/18
+  for (int ii=0; ii < OC_BUFSIZE; ii++)
+    oc.c[ii] = C_NULL;
+
   oc.p = NULL;
 
   return oc;

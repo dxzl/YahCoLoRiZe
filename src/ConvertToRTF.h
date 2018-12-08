@@ -23,13 +23,13 @@ private:
   TStringsW* __fastcall CreateFontList(wchar_t* buf, int size);
   String __fastcall GetFontTable(TStringsW* slRtfFonts);
   int __fastcall Convert(wchar_t* buf, int size,
-               TMemoryStream* msIn, TStringsW* slRtfFonts);
+               TMemoryStream* msSource, TStringsW* slRtfFonts);
   int __fastcall WriteRtfToStream(String sBody, String ColorTable,
                                         String FontTable, TMemoryStream* ms);
 
   // properties
-  int defaultFgColor, defaultBgColor, linesInHeader, maxColors, tabTwips;
-  bool bShowStatus, bStripFontType, bStripFontSize;
+  int m_defaultFgColor, m_defaultBgColor, m_linesInHeader, m_maxColors, m_tabTwips;
+  bool m_bShowStatus, m_bStripFontType, m_bStripFontSize;
 
   TTaeRichEdit* re;
 
@@ -45,20 +45,20 @@ public:
   TMemoryStream* __fastcall Execute(TMemoryStream* msIn, int &retVal);
   TMemoryStream* __fastcall Execute(TStringsW* sl, int &retVal);
 
-  __property bool StripFontType = {read = bStripFontType, write = bStripFontType};
-  __property bool StripFontSize = {read = bStripFontSize, write = bStripFontSize};
+  __property bool StripFontType = {read = m_bStripFontType, write = m_bStripFontType};
+  __property bool StripFontSize = {read = m_bStripFontSize, write = m_bStripFontSize};
 
-  __property int DefaultFgColor = {read = defaultFgColor, write = defaultFgColor};
-  __property int DefaultBgColor = {read = defaultBgColor, write = defaultBgColor};
+  __property int DefaultFgColor = {read = m_defaultFgColor, write = m_defaultFgColor};
+  __property int DefaultBgColor = {read = m_defaultBgColor, write = m_defaultBgColor};
 
   // Reports back the header's # lines so we can position the cursor on
   // the appropriare line for the previous view
-  __property int LinesInHeader = {read = linesInHeader};
+  __property int LinesInHeader = {read = m_linesInHeader};
 
   // Ran into a max of 7 colors for PalTalk so set this to MaxColors
   // (-1 is no-limit)
-  __property int MaxColors = {read = maxColors, write = maxColors};
-  __property int TabTwips = {read = tabTwips, write = tabTwips};
+  __property int MaxColors = {read = m_maxColors, write = m_maxColors};
+  __property int TabTwips = {read = m_tabTwips, write = m_tabTwips};
 };
 //---------------------------------------------------------------------------
 #endif

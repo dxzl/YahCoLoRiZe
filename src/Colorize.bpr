@@ -57,19 +57,19 @@ USERDEFINES =
 SYSDEFINES = NO_STRICT
 # ---------------------------------------------------------------------------
 CFLAG1 = -I"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl \
-  -O2 -Hc -H=$(BCB)\lib\vcl40.csm -w -Ve -Tkh30000 -a8 -5 -k- -vi \
+  -Od -Hc -H=$(BCB)\lib\vcl40.csm -w -Ve -Tkh30000 -r- -a8 -5 -k -y -v -vi- \
   -D$(SYSDEFINES);$(USERDEFINES) -c -b- -w-par -w-inl -Vx -tWM
 CFLAG2 =
 CFLAG3 =
 PFLAGS = -U"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(RELEASELIBPATH) \
   -I"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl \
-  -N2OBJ -N0OBJ -$Y- -$L- -$D- -v -M -JPHNE
+  -N2OBJ -N0OBJ -$Y+ -$W -$O- -v -M -JPHNE
 RFLAGS = -i"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\include;$(BCB)\bin;$(BCB)\Imports;$(BCB)\include\vcl
 AFLAGS = /i"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects" \
   /i..\taerichedit /i$(BCB)\include /i$(BCB)\bin /i$(BCB)\Imports \
-  /i$(BCB)\include\vcl /mx /w2 /zn /z /x /n /c /d_RTLDLL /dUSEPACKAGES
+  /i$(BCB)\include\vcl /mx /w2 /zi /z /x /n /c /d_RTLDLL /dUSEPACKAGES
 LFLAGS = -L"..\..\..\..\..\..\Program Files (x86)\Borland\CBuilder4\Projects";..\taerichedit;$(BCB)\Imports;$(BCB)\lib\obj;$(BCB)\lib;$(BCB)\Projects\Lib;$(BCB)\Projects\Bpl;$(RELEASELIBPATH) \
-  -DFreeware -aa -Tpe -x -Gn -Gl -Gi -M
+  -DFreeware -aa -Tpe -x -Gn -Gl -Gi -M -v
 IFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = c0w32.obj sysinit.obj $(OBJFILES)
@@ -82,7 +82,7 @@ ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=7
-MinorVer=44
+MinorVer=45
 Release=0
 Build=0
 Debug=0
@@ -96,13 +96,13 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Discrete-Time Systems
 FileDescription=YahCoLoRiZe
-FileVersion=7.44.0.0
+FileVersion=7.45.0.0
 InternalName=YahCoLoRiZe
 LegalCopyright=2019
 LegalTrademarks=YahCoLoRiZe
 OriginalFilename=Colorize.exe
 ProductName=YahCoLoRiZe Unicode
-ProductVersion=7.44
+ProductVersion=7.45
 Comments=Distribute freely... (Not FOR Commercial USE!)
 
 [HistoryLists\hlIncludePath]

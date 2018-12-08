@@ -21,9 +21,9 @@
 #pragma package(smart_init)
 //---------------------------------------------------------------------------
 __fastcall TConvertToRTF::TConvertToRTF(TComponent* Owner, TTaeRichEdit* re,
-                                                             bool bShowStatus)
+                                                             bool m_bShowStatus)
 // We always show progress and allow the ESC key to abort, set
-// bShowStatus just determins if the status-message panel pops up.
+// m_bShowStatus just determins if the status-message panel pops up.
 {
   this->dts = static_cast<TDTSColor*>(Owner);
   this->re = re;
@@ -31,23 +31,23 @@ __fastcall TConvertToRTF::TConvertToRTF(TComponent* Owner, TTaeRichEdit* re,
   // set property to use for deftabXXX twips
   // default is 720 - 20 twips per point
   if (this->re)
-    this->tabTwips = re->GetTabWidthTwips(); // use passed-in control
+    this->m_tabTwips = re->GetTabWidthTwips(); // use passed-in control
   else
-    this->tabTwips = tae->GetTabWidthTwips(); // use main edit-control
+    this->m_tabTwips = tae->GetTabWidthTwips(); // use main edit-control
 
-  this->bShowStatus = bShowStatus;
+  this->m_bShowStatus = m_bShowStatus;
 
   // These can be changed prior to execute via their properties!
   // (Set to NO_COLOR and it won't be written to the color table)
-  defaultFgColor = DTSColor->Afg;
-  defaultBgColor = DTSColor->Abg;
+  m_defaultFgColor = DTSColor->Afg;
+  m_defaultBgColor = DTSColor->Abg;
 
-  bStripFontType = false;
-  bStripFontSize = false;
+  m_bStripFontType = false;
+  m_bStripFontSize = false;
 
-  maxColors = -1; // no limit on # colors
+  m_maxColors = -1; // no limit on # colors
 
-  linesInHeader = 0; // LinesInHeader property (read only)
+  m_linesInHeader = 0; // LinesInHeader property (read only)
 }
 //---------------------------------------------------------------------------
 __fastcall TConvertToRTF::~TConvertToRTF(void)
@@ -171,7 +171,7 @@ TMemoryStream* __fastcall TConvertToRTF::Execute(wchar_t* buf,
 }
 //---------------------------------------------------------------------------
 int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
-                TMemoryStream* msIn, TStringsW* slRtfFonts)
+                          TMemoryStream* msDest, TStringsW* slRtfFonts)
 // returns an error-code or 1 if user abort... zero if no problems
 // (uses TMemoryStream ms for output...)
 {
@@ -180,7 +180,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
 
   // Change processing status panel... Processing to RTF format
   // (set CpMaxValue 1 until we know iSize and set it below)
-  if (this->bShowStatus)
+  if (this->m_bShowStatus)
     dts->CpShow(STATUS[2], DS[70]);
 
   int retVal;
@@ -308,7 +308,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
             if (idx < 0)
               idx = 0; // use default font if lookup failed
 
-            if (!bStripFontType)
+            if (!m_bStripFontType)
             {
               sLine += "\\f" + String(idx);
 
@@ -331,7 +331,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
             else
               State.fontSize = fs;
 
-            if (!bStripFontSize)
+            if (!m_bStripFontSize)
             {
               sLine += "\\fs" + String(State.fontSize*2);
 
@@ -449,7 +449,7 @@ int __fastcall TConvertToRTF::Convert(wchar_t* buf, int size,
       String FontTable = this->GetFontTable(slRtfFonts);
 
       // Write to gMs Memory-Stream
-      retVal = this->WriteRtfToStream(sOut, ColorTable, FontTable, msIn);
+      retVal = this->WriteRtfToStream(sOut, ColorTable, FontTable, msDest);
     }
     catch(...)
     {
@@ -494,7 +494,7 @@ String __fastcall TConvertToRTF::TerminateLine(String sLine, PUSHSTRUCT State)
 //---------------------------------------------------------------------------
 int __fastcall TConvertToRTF::AddOrResolveColor(int C, TList* cList)
 // C is a YahCoLoRiZe +/- color. cList is a list of
-// POSITIVE RGB colors with size limit this->maxColors (a property)
+// POSITIVE RGB colors with size limit this->m_maxColors (a property)
 //
 // We return a 0-based index into cList.
 {
@@ -504,11 +504,11 @@ int __fastcall TConvertToRTF::AddOrResolveColor(int C, TList* cList)
 
   if (idx < 0) // Not already in the table?
   {
-    if (this->maxColors < 0)
+    if (this->m_maxColors < 0)
       idx = this->AddColor(C, cList); // no limit...
     else
     {
-      if (cList->Count >= this->maxColors)
+      if (cList->Count >= this->m_maxColors)
         idx = this->ResolveColor(C, cList);
       else
         idx = this->AddColor(C, cList);
@@ -524,7 +524,7 @@ int __fastcall TConvertToRTF::AddColor(int C, TList* cList)
 //
 // C must be a positive RGB binary number
 {
-  if (this->maxColors == -1 || cList->Count < this->maxColors)
+  if (this->m_maxColors == -1 || cList->Count < this->m_maxColors)
   {
     cList->Add((void*)C);
     return cList->Count-1;
@@ -600,10 +600,10 @@ String __fastcall TConvertToRTF::RgbToRtfColorTable(TList* cList)
   // Initialize first two colors to our default colors
   if (cList->Count == 0)
   {
-    if (defaultFgColor == NO_COLOR)
+    if (m_defaultFgColor == NO_COLOR)
       AddOrResolveColor(IRCBLACK, cList);
     else
-      AddOrResolveColor(defaultFgColor, cList);
+      AddOrResolveColor(m_defaultFgColor, cList);
   }
 
 // Causing trouble with paltalk to have a color the same as the bg color?
@@ -614,10 +614,10 @@ String __fastcall TConvertToRTF::RgbToRtfColorTable(TList* cList)
 //
 //  if (Colors->Count == 1)
 //  {
-//    if (defaultBgColor == NO_COLOR)
+//    if (m_defaultBgColor == NO_COLOR)
 //      AddOrResolveColor(IRCWHITE, cList);
 //    else
-//      AddOrResolveColor(defaultBgColor, cList);
+//      AddOrResolveColor(m_defaultBgColor, cList);
 //  }
 
   try
@@ -630,12 +630,12 @@ String __fastcall TConvertToRTF::RgbToRtfColorTable(TList* cList)
       if ((ii % 4)==0)
       {
         sOut += "\r\n";
-        linesInHeader++;
+        m_linesInHeader++;
       }
     }
 
     sOut += "}\r\n"; // Terminate
-    linesInHeader++;
+    m_linesInHeader++;
   }
   catch(...)
   {
@@ -667,7 +667,7 @@ TStringsW* __fastcall TConvertToRTF::CreateFontList(wchar_t* buf, int size)
     return NULL;
 
   // Show status "Creating font-list..."
-  if (this->bShowStatus)
+  if (this->m_bShowStatus)
     dts->CpShow(STATUS[12], DS[70]);
 
   TStringsW* slRtfFonts = NULL;
@@ -694,7 +694,7 @@ TStringsW* __fastcall TConvertToRTF::CreateFontList(wchar_t* buf, int size)
       slRtfFonts->Add(utils->GetLocalFontString(idx));
 
       // don't need more than the default font for Paltalk...
-      if (this->bStripFontType)
+      if (this->m_bStripFontType)
         return slRtfFonts;
 
       String sFont;
@@ -791,7 +791,7 @@ String __fastcall TConvertToRTF::GetFontTable(TStringsW* slRtfFonts)
     // (Rich-Edit 3.0 and up). Prefix an RTF plain-text file with Byte-Order-Mark
     // 0xfeff.
     sFont = String("{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033\\deftab") +
-             String(tabTwips) + String("{\\fonttbl") + sFont + String("}\r\n");
+             String(m_tabTwips) + String("{\\fonttbl") + sFont + String("}\r\n");
   }
   catch(...)
   {
@@ -821,7 +821,7 @@ int __fastcall TConvertToRTF::WriteRtfToStream(String sBody, String ColorTable,
 
     ms->WriteBuffer(FontTable.c_str(), FontTable.Length()); // Preamble
 
-    linesInHeader++;
+    m_linesInHeader++;
 
     ms->WriteBuffer(ColorTable.c_str(), ColorTable.Length()); // Color table
 
@@ -835,7 +835,7 @@ int __fastcall TConvertToRTF::WriteRtfToStream(String sBody, String ColorTable,
 
     ms->WriteBuffer(sFont.c_str(), sFont.Length()); // Remaining preamble
 
-    linesInHeader++;
+    m_linesInHeader++;
 
     ms->WriteBuffer(sBody.c_str(), sBody.Length()); // Main body
 

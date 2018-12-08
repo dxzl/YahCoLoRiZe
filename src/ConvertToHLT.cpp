@@ -248,7 +248,10 @@ int __fastcall TConvertToHLT::ScanForCtrlK(TMemoryStream * MS_Temp)
   if (HlColor <= 0 || HlColor > DTSColor->PaletteSize) HlColor = IRCRED;
 
   // X is a placeholder!!!
-  String Temp = "cf" + String(HlColor) + " X";
+  // NOTE: Don't need to leave a space before X because we have another
+  // command directly following this one!
+  //String Temp = "cf" + String(HlColor) + " X";
+  String Temp = "cf" + String(HlColor) + "X";
   int HlIdx = Temp.Length(); // 1-based index of X
 
   // Back to regular color...
