@@ -57,95 +57,113 @@ bool __fastcall TOptimizer::StripRedundantFgRGB(WideString &S, bool bShowStatus)
   return bRet;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TOptimizer::StripRedundantFgRGB(wchar_t* &pOld, int &OldSize, bool bShowStatus)
+bool __fastcall TOptimizer::StripRedundantFgRGB(wchar_t* pOld, int &OldSize, bool bShowStatus)
 // Call this after the main Execute routine to analyze the text for
-// unneccessary RGB Foreground colors in front of spaces
+// unneccessary RGB Foreground colors in front of spaces.
+
+// Returns the same buffer but with a smaller size via reference and true if
+// success.
 {
   bool bRet = false;
+  TList* ColorIndexes = NULL;
 
   try
   {
-    TList* ColorIndexes = new TList();
-    int iRet, len, fg, bg, ColorIdx;
-    bool bColor, bSpace;
-
-    bool bPrevColorSpace = false;
-    int PrevColorIdx = -1;
-
-    for(int ii = 0; ii < OldSize; ii++)
+    try
     {
-      if (pOld[ii] == CTRL_K)
+      ColorIndexes = new TList();
+
+      bool bPrevColorSpace = false, bColor = false;
+      int PrevColorIdx = -1, ColorIdx = -1;
+
+      for(int ii = 0; ii < OldSize; ii++)
       {
-        fg = NO_COLOR;
-        bg = NO_COLOR;
-
-        len = utils->CountColorSequence(pOld, ii, OldSize, fg, bg);
-
-        if (fg < 0) // Foreground RGB color?
+        if (pOld[ii] == CTRL_K)
         {
-          ColorIdx = ii;
-          bColor = true;
+          int fg = NO_COLOR;
+          int bg = NO_COLOR;
+
+          int len = utils->CountColorSequence(pOld, ii, OldSize, fg, bg);
+
+          if (fg < 0) // Foreground RGB color?
+          {
+            ColorIdx = ii;
+            bColor = true;
+          }
+
+          ii += len;
+
+          continue;
         }
 
-        ii += len;
+        // !!!!!fix bug 11/8/2018 - ii and OldSize reversed below!!!!!!
+        int iRet = utils->SkipCode(pOld, OldSize, ii);
 
-        continue;
-      }
+        if (iRet == S_NULL)
+          break;
 
-      // !!!!!fix bug 11/8/2018 - ii and OldSize reversed below!!!!!!
-      iRet = utils->SkipCode(pOld, OldSize, ii);
+        if (iRet == S_CRLF)
+        {
+          bPrevColorSpace = false;
+          bColor = false;
+          PrevColorIdx = -1;
+          continue;
+        }
 
-      if (iRet == S_NULL)
-        break;
+        if (iRet != S_NOCODE)
+          continue;
 
-      if (iRet == S_CRLF)
-      {
-        bPrevColorSpace = false;
+        // Have a real char, set flags
+        bool bSpace = (pOld[ii] == ' ') ? true : false;
+
+        // If this wchar_t (space or non-space) has a RGB foreground color in
+        // front of it and the previous wchar_t was a space with a  rgb fg
+        // color, queue the previous space char's color to be deleted.
+        // Add index of color (8 chars) to delete...
+        if (bPrevColorSpace && bColor && PrevColorIdx >= 0)
+          ColorIndexes->Add((void*)PrevColorIdx);
+
+        // This logic holds the bPrevColorSpace flag over a consecutive
+        // sequence of spaces, until a real char
+        if (!bPrevColorSpace)
+          bPrevColorSpace = bColor && bSpace;
+        else if (!bSpace)
+          bPrevColorSpace = false;
+
+        if (bColor)
+          PrevColorIdx = ColorIdx;
+
         bColor = false;
-        PrevColorIdx = -1;
-        continue;
       }
 
-      if (iRet != S_NOCODE)
-        continue;
+      // delete each redundant color whose index is in ColorIndexes.
+      // (each list-entry is an index to an 8 character color-code, C#rrggbb)
+      // Go backward through the list overwriting memory the unnecessary
+      // color-code occupies.
+      if (ColorIndexes->Count > 0)
+      {
+        for(int ii = ColorIndexes->Count-1; ii >= 0; ii--, OldSize -= 8)
+          for (int jj = (int)ColorIndexes->Items[ii]; jj < OldSize; jj++)
+            pOld[jj] = pOld[jj+8];
+#if DEBUG_ON
+        dts->CWrite("\r\nStripRedundantFgRGB(): new size: " + String(OldSize) + "\r\n");
+#endif
+      }
 
-      // Have a real char, set flags
-      bSpace = (pOld[ii] == ' ') ? true : false;
-
-      // If this wchar_t (space or non-space) has a RGB foreground color in
-      // front of it and the previous wchar_t was a space with a  rgb fg
-      // color, queue the previous space char's color to be deleted.
-      // Add index of color (8 chars) to delete...
-      if (bPrevColorSpace && bColor && PrevColorIdx >= 0)
-        ColorIndexes->Add((void*)PrevColorIdx);
-
-      // This logic holds the bPrevColorSpace flag over a consecutive
-      // sequence of spaces, until a real char
-      if (!bPrevColorSpace)
-        bPrevColorSpace = bColor && bSpace;
-      else if (!bSpace)
-        bPrevColorSpace = false;
-
-      PrevColorIdx = ColorIdx;
-
-      bColor = false;
+      bRet = true;
     }
-
-    // delete each redundant color whose index is in ColorIndexes.
-    // (each list-entry is an index to an 8 character color-code, C#rrggbb)
-    // Go backward through the list overwriting memory the unnecessary
-    // color-code occupies.
-    if (ColorIndexes->Count > 0)
-      for(int ii = ColorIndexes->Count-1; ii >= 0; ii--, OldSize -= 8)
-        for (int jj = (int)ColorIndexes->Items[ii]; jj < OldSize; jj++)
-          pOld[jj] = pOld[jj+8];
-
-    delete ColorIndexes;
-
-    bRet = true;
+    catch(...)
+    {
+#if DEBUG_ON
+      dts->CWrite("\r\nException thrown in TOptimizer::StripRedundantFgRGB(wchar_t*, int &, bool)\r\n");
+#endif
+    }
   }
-  catch(...) {}
-
+  __finally
+  {
+    if (ColorIndexes)
+      delete ColorIndexes;
+  }
   return bRet;
 }
 //---------------------------------------------------------------------------

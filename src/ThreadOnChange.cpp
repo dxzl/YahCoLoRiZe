@@ -81,7 +81,8 @@ void __fastcall TThreadOnChange::Execute(void)
       break;
     }
     else
-      this->Suspend(); // OnChange in Main.cpp Resumes!
+//      this->Suspend(); // OnChange in Main.cpp Resumes!
+      SuspendThread((void*)this->Handle); // OnChange in Main.cpp Resumes!
   }
 }
 //---------------------------------------------------------------------------
@@ -107,7 +108,8 @@ void __fastcall TThreadOnChange::Add(ONCHANGEW oc)
   if (widx >= OC_MAXOBJECTS)
     widx = 0;
 
-  this->Resume();
+//  this->Resume();
+  ResumeThread((void*)this->Handle);
 }
 //---------------------------------------------------------------------------
 bool __fastcall TThreadOnChange::ProcessOC(ONCHANGEW oc)
@@ -150,6 +152,10 @@ bool __fastcall TThreadOnChange::ProcessOC(ONCHANGEW oc)
 
           // NOTE: we need a string-list version of GetCodeIndices to get
           // both indices without having to scan the string twice...
+          //
+          // NOTE: the LineCount in a rich-edit does not change as Enter is
+          // pressed. It changes with addition/removal of the first char in
+          // a line.
 
           bool bCodes = (oc.pos.x == 0) ? false : true;
 
@@ -185,24 +191,29 @@ bool __fastcall TThreadOnChange::ProcessOC(ONCHANGEW oc)
 
         if (UndoLen >= 0 && UndoIdx >= 0)
         {
+          bool bLineDel = (oc.deltaLineCount == -1);
+
           TPoint loc(UndoIdx, UndoLine);
-          UndoStr = TaeSL->CopyText(loc, UndoLen);
+
+          if (bLineDel)
+            UndoStr = CRLF;
+          else
+            UndoStr = TaeSL->CopyText(loc, UndoLen);
+
           TaeSL->DeleteText(loc, UndoLen);
 
+//#if DEBUG_ON
+// DTSColor->CWrite("\r\nloc.x:" + String(loc.x) + ", loc.y:\"" + String(loc.y) + "\"\r\n");
+// DTSColor->CWrite("\r\nUndoLen:" + String(UndoLen) + ", UndoStr:\"" + UndoStr + "\"\r\n");
+//#endif
           // Add to undo-objects
-          if (TOCUndo != NULL)
+          if (TOCUndo != NULL && !UndoStr.IsEmpty())
           {
             // here we go to a little extra trouble to use a small-footprint
             // undo structure if only one char or line-break was deleted
-            if (UndoLen == 1 || (UndoLen == 2 && oc.deltaLineCount == -1))
+            if (UndoLen == 1 || bLineDel)
             {
-              wchar_t c;
-
-              if (UndoLen != 1)
-                c = C_CR;
-              else
-                c = UndoStr[1];
-
+              wchar_t c = UndoStr[1];;
               TOCUndo->Add(UNDO_DEL_SHORT, oc.view, UndoLen, oc.p, loc, oc.pos,
                                                               c, oc.insert);
             }
@@ -246,10 +257,10 @@ bool __fastcall TThreadOnChange::ProcessOC(ONCHANGEW oc)
           if (c == C_NULL)
             break;
 
-          UndoStr += c;
+          UndoStr += WideString(c);
 
           if (c == C_CR)
-            UndoStr += C_LF;
+            UndoStr += WideString(C_LF);
 
         }
         UndoLen = UndoStr.Length();
@@ -344,6 +355,9 @@ bool __fastcall TThreadOnChange::ProcessOC(ONCHANGEW oc)
         return false;
       }
     }
+//#if DEBUG_ON
+//    DTSColor->CWrite("\r\nTaeSL->Text after change:\r\n\"" + TaeSL->Text + "\"\r\n");
+//#endif
   }
   catch(...)
   {

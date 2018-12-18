@@ -154,7 +154,7 @@ void __fastcall TDTSColor::AppException(TObject *Sender, Exception *E)
   try
   {
     if (ThreadOnChange)
-      ThreadOnChange->Terminate();;
+      ThreadOnChange->Terminate();
   }
   catch(...) {}
 
@@ -782,6 +782,7 @@ void __fastcall TDTSColor::InitMainMenu(void)
   LeftJustify->Hint = DS[21];
   ProcessButton->Hint = DS[27];
   ShowButton->Hint = DS[244];
+  PauseButton->Hint = DS[26];
   PlayButton->Hint = DS[28];
   StopButton->Hint = DS[29];
   ResumeButton->Hint = DS[30];
@@ -1493,7 +1494,7 @@ void __fastcall TDTSColor::AddEffect(int Effect, bool bUndo,
 
   bool bRepRTF = bShowRTF && utils->IsRtfView();
 
-  if (tae->TextLength == 0)
+  if (tae->LineCount == 0)
   {
     if (bShowStatus)
       utils->ShowMessageU(String(DS[45])); // No text to process
@@ -1538,7 +1539,8 @@ void __fastcall TDTSColor::AddEffect(int Effect, bool bUndo,
   int SaveSelLength = tae->SelLength;
   int SaveSelLine = tae->Line;
 
-  int segmentsToAdd = utils->IsRtfView() ? 4 : 3;
+//  int segmentsToAdd = utils->IsRtfView() ? 4 : 3;
+  int segmentsToAdd = 3;
   CpInit(segmentsToAdd);
 
   try
@@ -1603,7 +1605,7 @@ void __fastcall TDTSColor::AddEffect(int Effect, bool bUndo,
           else
           {
             // TextLength counts line-terminators as two chars!
-            int len = (int)tae->TextLength - tae->LineCount + 1;
+            int len = utils->GetTextLength(tae);
             if (NewPosition > len)
               NewPosition = len;
           }
@@ -2854,11 +2856,21 @@ void __fastcall TDTSColor::HelpAbout(TObject *Sender)
   AboutForm->ShowModal();
   YcDestroyForm(AboutForm);
   AboutForm = NULL;
+
+  // Version of edit-control
+//  TModuleVersionInfo* pVI = tae->RichEditVersionInfo;
+//  if (pVI)
+//  {
+//    ShowMessage("Tae Edit Version: " + String(pVI->Major) + "." +
+//      String(pVI->Minor) + "." + String(pVI->Release) + "." +
+//            String(pVI->Build)); // Minor, Release, Build
+//    delete pVI;
+//  }
 }
 //----------------------------------------------------------------------------
 void __fastcall TDTSColor::EditSelectAllClick(TObject *Sender)
 {
-  if (tae->TextLength != 0)
+  if (tae->LineCount != 0)
     tae->SelectAll();
 }
 //---------------------------------------------------------------------------
@@ -2930,7 +2942,7 @@ void __fastcall TDTSColor::DoP(bool bShowStatus)
   if (!ProcessButton->Enabled)
     return;
 
-  if (bShowStatus && tae->TextLength == 0)
+  if (bShowStatus && tae->LineCount == 0)
   {
     utils->ShowMessageU(DS[45]); // "There is no text to process."
     tae->SetFocus();
@@ -4437,7 +4449,7 @@ int __fastcall TDTSColor::SetView(int NewView)
 {
   utils->PushOnChange(tae);
 
-  bool bHaveText = (tae->TextLength > 0) ? true : false;
+  bool bHaveText = (tae->LineCount > 0) ? true : false;
 
   SetViewMenuHandlers(false); // Disable Menu OnClick Handlers
 
@@ -4661,7 +4673,7 @@ int __fastcall TDTSColor::LoadView(int NewView)
 
           // Limit the index to the max raw-codes text
           // TextLength counts line-terminators as two chars!
-          int IrcTextLength = tae->TextLength - tae->LineCount + 1;
+          int IrcTextLength = utils->GetTextLength(tae);
 
           if (Idx > IrcTextLength)
             Idx = IrcTextLength;
@@ -4794,7 +4806,7 @@ int __fastcall TDTSColor::LoadView(int NewView)
 
         // If we edited text in RTF, IRC or ORG view - update the rtf-stream
         if (SL_IRC->Count > 0 && (tae->Modified || SL_HTM->Count == 0))
-          ConvertIrcToHtml(false); // Convert MS_IRC to MS_HTM (HTML)
+          ConvertIrcToHtml(false); // Convert SL_IRC to SL_HTM (HTML)
 
         if (SL_HTM->Count > 0)
         {
@@ -4850,7 +4862,7 @@ int __fastcall TDTSColor::LoadView(int NewView)
 
             utils->SetLine(tae, temp);
           }
-          else if (tae->View != V_RTF_SOURCE && tae->TextLength)
+          else if (tae->View != V_RTF_SOURCE && tae->LineCount > 0)
           {
             tae->PlainText = false;
             MS_RTF->Clear();
@@ -5173,6 +5185,10 @@ void __fastcall TDTSColor::Help1Click(TObject *Sender)
 {
   String Temp = HELPNAME;
   ShellExecute(Application->Handle, NULL, Temp.c_str(), NULL, NULL, SW_SHOWNORMAL);
+
+  // test of tae->GetSelTextBufW and other functions... to test parts of it,
+  // use both an rtf, irc and html or rtf source view mode
+  //utils->ShowMessageW(utils->MoveMainTextToString());
 }
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::PrinterPageSetupClick(TObject *Sender)
@@ -5182,7 +5198,7 @@ void __fastcall TDTSColor::PrinterPageSetupClick(TObject *Sender)
 
   if (tae->TaePrint)
   {
-    if (tae->TextLength == 0)
+    if (tae->LineCount == 0)
       utils->ShowMessageU(String(DS[80]));
     else
     {
@@ -5300,7 +5316,7 @@ void __fastcall TDTSColor::FilePrintClick(TObject *Sender)
 
   if (tae->TaePrint)
   {
-    if (tae->TextLength == 0)
+    if (tae->LineCount == 0)
       utils->ShowMessageU(String(DS[80]));
     else
     {
@@ -8518,7 +8534,7 @@ void __fastcall TDTSColor::DoFontEffect(int type, int p1, int p2, double p5)
 void __fastcall TDTSColor::BlendFGMenu(TObject *Sender)
 // From Effects Menu
 {
-  if (tae->TextLength == 0)
+  if (tae->LineCount == 0)
     return;
 
   SelectBlendPreset(String(DS[63])); // Foreground
@@ -8543,7 +8559,7 @@ void __fastcall TDTSColor::BlendFGMenu(TObject *Sender)
 void __fastcall TDTSColor::BlendBGMenu(TObject *Sender)
 // From Effects Menu
 {
-  if (tae->TextLength == 0)
+  if (tae->LineCount == 0)
     return;
 
   SelectBlendPreset(String(DS[65])); // Background
@@ -10418,27 +10434,36 @@ void __fastcall TDTSColor::MenuCharacterMapClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::MenuOptimizeClick(TObject *Sender)
 {
-  if (TOCUndo)
+  try
   {
-    // All undos are garbage if we optimize! (So ask...)
-    if (TOCUndo->Count > 0)
+    CpInit(1);
+
+    if (TOCUndo)
     {
-      if (utils->ShowMessageU(Handle, DS[50],
-                    MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1) == IDNO)
-        return;
+      // All undos are garbage if we optimize! (So ask...)
+      if (TOCUndo->Count > 0)
+      {
+        if (utils->ShowMessageU(Handle, DS[50],
+                      MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1) == IDNO)
+          return;
+      }
+
+      // When we optimize we can no longer rely on the undo-list's
+      // saved indices!
+      TOCUndo->Clear(); // Clear undo buffer
     }
 
-    // When we optimize we can no longer rely on the undo-list's
-    // saved indices!
-    TOCUndo->Clear(); // Clear undo buffer
+    // Save original position and carat
+    TYcPosition* p = new TYcPosition(tae);
+    p->SavePos = p->Position;
+    utils->Optimize(true);
+    p->Position = p->SavePos;
+    delete p;
   }
-
-  // Save original position and carat
-  TTaePosition* p = new TTaePosition(tae);
-  p->SavePos = p->Position;
-  utils->Optimize(true);
-  p->Position = p->SavePos;
-  delete p;
+  __finally
+  {
+    CpHide();
+  }
 }
 //---------------------------------------------------------------------------
 void __fastcall TDTSColor::ddetextPokeData(TObject *Sender)
@@ -10622,7 +10647,10 @@ PASTESTRUCT __fastcall TDTSColor::TaeEditCutCopy(bool bCut, bool bCopy)
       WideString wSelText = tae->SelTextW;
 
       if (bCopy)
+      {
+        utils->ClearClipboard();
         utils->CopyTextToClipboard(wSelText);
+      }
 
       if (bCut)
       {
@@ -10675,7 +10703,7 @@ PASTESTRUCT __fastcall TDTSColor::TaeEditCutCopy(bool bCut, bool bCopy)
     {
       utils->SetOldLineVars(tae);
 
-      if (tae->TextLength == 0 || sl->TotalLength == 0)
+      if (tae->LineCount == 0 || sl->TotalLength == 0)
       {
         // Switch view to V_OFF and clear streams
         if (tae->View == V_ORG)
@@ -11197,7 +11225,7 @@ void __fastcall TDTSColor::UpdateViewMenuState(void)
   }
 
   // Leave this on so we can show the rtf source even if no MS_RTF text...
-  if (MS_RTF->Size > 0 || SL_IRC->Count > 0 || tae->TextLength)
+  if (MS_RTF->Size > 0 || SL_IRC->Count > 0 || tae->LineCount > 0)
     RTFSource1->Enabled = true;
   else
     RTFSource1->Enabled = false;
@@ -12126,11 +12154,14 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
 // This function queues chars for processing by a background thread
 // (ThreadOnChange.cpp) to keep this handler from bogging down.
 {
+//#if DEBUG_ON
+//  CWrite("\r\nLockCount: " + String(tae->LockCounter));
+//#endif
+
   if (tae->LockCounter != 0 || tae->View == V_RTF_SOURCE || tae->View == V_HTML)
     return;
 
   // Disable changes (faster code)
-//  TTaeRichEditChange SaveOnChange = tae->OnChange;
   TNotifyEvent SaveOnChange = tae->OnChange;
   tae->OnChange = NULL;
   tae->LockCounter++;
@@ -12165,6 +12196,10 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
     bTextWasProcessed = false;
   }
 
+//#if DEBUG_ON
+// DTSColor->CWrite("\r\noc.deltaLength:" + String(oc.deltaLength) +
+// ", oc.deltaLineCount:" + String(oc.deltaLineCount) + ", selText:\"" + tae->SelText + "\"\r\n");
+//#endif
   // User deleted chars? (1 or 2 for cr/lf)
   // if user pressed Alt-X after a sequence of hex digits, deltaLength,
   // if 4 hex digits, will be -3.
@@ -12231,8 +12266,8 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
         ocNew.deltaLength = 1;
 
 //#if DEBUG_ON
-//        CWrite("\r\nadding: " + IntToHex((int)ocNew.c, 5) +
-//          " selStart: " + String(oc.selStart) + "\r\n");
+//        CWrite("\r\nUnicode replacement occurred. ThreadOnChange->Add: " + IntToHex((int)ocNew.c, 5) +
+//          "\r\nselStart: " + String(oc.selStart) + ", ocNew.pos.x:" + String(ocNew.pos.x) + "\r\n");
 //#endif
         // Queue to our background thread to add new unicode char after it deletes
         // the hex-code chars.
@@ -12298,6 +12333,10 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
           if (!buf[ii])
             break;
         }
+//#if DEBUG_ON
+//  DTSColor->CWrite("\r\nlast-first:" + String(last-first) + "\r\n");
+//  DTSColor->CWrite("\r\noc.c[0]:" + String(oc.c[0]) + "\r\n");
+//#endif
 
         if (oc.view == V_IRC || oc.view == V_ORG || oc.view == V_OFF)
         {
@@ -12340,6 +12379,15 @@ void __fastcall TDTSColor::TaeEditChange(TObject *Sender)
 
         delete [] buf;
       }
+    }
+
+    // With YcEdit, a single C_CR is at the end of a line in the
+    // control, unlike TaeRichEdit which added a LF.
+    if (oc.c[0] == C_CR)
+    {
+      oc.c[1] = C_LF;
+      oc.c[2] = C_NULL;
+      oc.deltaLength = 2; // need this as flag to ThredOnChange
     }
 
     ThreadOnChange->Add(oc);

@@ -321,7 +321,7 @@ ONCHANGEW __fastcall TUtils::GetInfoOC(TTaeRichEdit* re)
   oc.selStart = re->SelStart;
   oc.line = GetLine(re);
   oc.lineCount = re->LineCount;
-  oc.length = re->TextLength - oc.lineCount + 1;
+  oc.length = GetTextLength(re);
   oc.deltaLength = oc.length - re->OldLength;
   oc.deltaLineCount = oc.lineCount - re->OldLineCount;
   oc.view = re->View;
@@ -357,7 +357,7 @@ void __fastcall TUtils::SetOldLineVars(TTaeRichEdit* re, bool bInit)
   else
   {
     re->OldLineCount = re->LineCount;
-    re->OldLength = re->TextLength - re->OldLineCount + 1;
+    re->OldLength = GetTextLength(re);
   }
 }
 //---------------------------------------------------------------------------
@@ -731,7 +731,7 @@ WideString __fastcall TUtils::DecodeHighlight(TTaeRichEdit* re)
 {
   WideString RetStr;
 
-  if (re->TextLength == 0)
+  if (re->LineCount == 0)
     return RetStr; // not really an error...
 
   PushOnChange(re);
@@ -1274,25 +1274,26 @@ bool __fastcall TUtils::MoveMainTextToBuffer(wchar_t* &pBuf, int &iSize)
     }
     else
     {
-      int textLen;
-
-      if (tae->SelLength)
-        textLen = tae->SelLength + CountCRs(tae->SelTextW);
-      else // TextLength already includes line-terminators as two chars...
-        textLen = tae->TextLength;
+      int textLen = tae->SelLength ? tae->SelLength : tae->TextLength;
 
       if (textLen > 0)
       {
-        int NumChars = textLen+1;
+        // need to add 1 for the null or it will truncate the text!
+        int maxChars = textLen+1;
+        pBuf = new wchar_t[maxChars];
 
-        pBuf = new wchar_t[NumChars];
+        int charsCopied;
 
         if (tae->SelLength > 0)
-          tae->GetSelTextBufW(pBuf, NumChars*sizeof(wchar_t));
+          charsCopied = tae->GetSelTextBufW(pBuf, maxChars*sizeof(wchar_t));
         else
-          tae->GetTextBufW(pBuf, NumChars*sizeof(wchar_t));
-
-        iSize = NumChars;
+          charsCopied = tae->GetTextBufW(pBuf, maxChars*sizeof(wchar_t));
+        //ShowMessage("charsCopied (not including null):" + String(charsCopied) +
+        //"\r\nmaxChars (including null):" + String(maxChars) +
+        //"\r\ntae->LineCount:" + String(tae->LineCount) +
+        //"\r\ntae->TextLength:" + String(tae->TextLength) +
+        //"\r\ntae->SelLength:" + String(tae->SelLength));
+        iSize = textLen;
       }
     }
 
@@ -3412,7 +3413,7 @@ bool __fastcall TUtils::GetCodeIndices(TStringsW* sl, int &FirstIdx,
   else
   {
     RealStart = 0;
-    RealCount = re->TextLength - re->LineCount + 1;
+    RealCount = utils->GetTextLength(re);
   }
 
   bool bRet = GetCodeIndices(pBuf, iSize, FirstIdx, LastIdx, CodeIdx,
@@ -3446,7 +3447,7 @@ bool __fastcall TUtils::GetCodeIndices(WideString S, int &FirstIdx,
   else
   {
     RealStart = 0;
-    RealCount = re->TextLength - re->LineCount + 1;
+    RealCount = utils->GetTextLength(re);
   }
 
   return GetCodeIndices(S.c_bstr(), S.Length(), FirstIdx, LastIdx,
@@ -3467,7 +3468,7 @@ bool __fastcall TUtils::GetCodeIndices(wchar_t* pBuf, int iSize, int &FirstIdx,
   else
   {
     RealStart = 0;
-    RealCount = re->TextLength - re->LineCount + 1;
+    RealCount = utils->GetTextLength(re);
   }
 
   return GetCodeIndices(pBuf, iSize, FirstIdx, LastIdx, CodeIdx, RealStart,
@@ -4769,12 +4770,37 @@ int __fastcall TUtils::GetLine(TTaeRichEdit* re)
   // is inserted at the end of a line that is broken because of wordwrapping"
   // (So use LF to count lines just in case...)
 //  int selLen = re->SelStart+1;
-//  int textLen = re->TextLength - re->LineCount + 1;
+//  int textLen = utils->GetTextLength(re);
 //  for (int ii = 1; ii <= selLen && ii <= textLen; ii++)
 //    if (re->Text[ii] == LF)
 //      Count++;
 
 //  return Count;
+}
+//---------------------------------------------------------------------
+// Wrapper for TextLength (different between old C++ Builder 4 and
+// RAD Studio versions!)
+long __fastcall TUtils::GetTextLength(TTaeRichEdit* re)
+{
+  long textLength = re->TextLength;
+
+  if (textLength == 0)
+    return 0;
+
+#if !ISRADSTUDIO
+    textLength = textLength - re->LineCount + 1;
+    if (textLength < 0)
+      textLength = 0;
+//#if DEBUG_ON
+//  DTSColor->CWrite("BORLAND GetTextLength():" + String (textLength) + "\r\n");
+//#endif
+#else
+//#if DEBUG_ON
+//  DTSColor->CWrite("RAD GetTextLength():" + String (textLength) + "\r\n");
+//#endif
+#endif
+
+  return textLength;
 }
 //---------------------------------------------------------------------
 // Overloaded
@@ -7010,6 +7036,12 @@ WideString __fastcall TUtils::ResolveStateForCut(PUSHSTRUCT TrailingState,
   return PrintStateString(psTemp, true);
 }
 //---------------------------------------------------------------------------
+// wInOut on In has the line we want to paste into
+// wPaste has the string we want to paste, we will be stripping its old
+// state codes and writing new...
+// wInOut on Out has the modified text line with possible CRLF chars for
+// any additional lines. The calling function then should call SetStringEx()
+// in the TStringsW class to paste text containing line-breaks.
 int __fastcall TUtils::ResolveStateForPaste(TPoint p, WideString &wInOut,
                                                       WideString wPaste)
 {

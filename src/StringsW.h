@@ -38,9 +38,9 @@ private:
 
   // Borrowed from YahCoLoRiZe' Utils.cpp
   static WideString __fastcall LowerCaseW(WideString s);
-  static bool __fastcall WriteStringToFileW(WideString wPath, String sInfo);
-  static String __fastcall ReadStringFromFileW(WideString wPath);
-  static WideString __fastcall Utf8ToWide(String sIn);
+  static bool __fastcall WriteStringToFileW(WideString wPath, AnsiString sInfo);
+  static AnsiString __fastcall ReadStringFromFileW(WideString wPath);
+  static WideString __fastcall Utf8ToWide(AnsiString sIn);
   static WideString __fastcall Utf8ToWide(char* buf, int len);
   static String __fastcall WideToUtf8(WideString sIn);
 #endif

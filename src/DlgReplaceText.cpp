@@ -220,7 +220,7 @@ void __fastcall TReplaceTextForm::ViewRtf(TTaeRichEdit* re)
   // Set Cursor in rich-text to the same point as cursor in plain text
   int First;
 
-  if (re->SelStart >= (int)re->TextLength - re->LineCount + 1)
+  if (re->SelStart >= re->TextLength)
     First = -1; // set cursor to end
   else
     First = utils->GetRealIndex(EditString[idx], re->SelStart + re->Line);
@@ -278,7 +278,7 @@ void __fastcall TReplaceTextForm::ViewIrc(TTaeRichEdit* re)
   if (SaveSelLength)
     SaveSelLength = (iLast-CI)-OrigSelCRs;
 
-  int NewTextLen = re->TextLength - re->LineCount + 1;
+  int NewTextLen = utils->GetTextLength(re);
 
   // Limit-checking...
   if (SaveSelStart >= NewTextLen)
@@ -411,7 +411,7 @@ void __fastcall TReplaceTextForm::FrClose(void)
 void __fastcall TReplaceTextForm::FrFind(bool bForward)
 // Called when the Find Up or Find Down buttons are pressed
 {
-  if (bReplacing || EditFind->TextLength == 0)
+  if (bReplacing || EditFind->LineCount == 0)
     return;
 
 #if DEBUG_ON
@@ -491,7 +491,7 @@ void __fastcall TReplaceTextForm::InitCurrentFindPos(bool bForward)
 int __fastcall TReplaceTextForm::FindNext(bool bForward)
 // returns -1 if error, 0 if not found, 1 if found, 2 if end of search
 {
-  if (EditFind->TextLength == 0)
+  if (EditFind->LineCount == 0)
     return 0;
 
   int RetVal;
@@ -1101,7 +1101,7 @@ void __fastcall TReplaceTextForm::EditKeyDown(TObject *Sender,
     Key = 0;
   }
 
-  if (re->TextLength == 0)
+  if (re->LineCount == 0)
     return;
 
   if (Key == VK_DELETE)
@@ -1299,7 +1299,7 @@ void __fastcall TReplaceTextForm::HSelectAll(TTaeRichEdit* re)
 {
   utils->PushOnChange(re);
   re->SelStart = 0;
-  re->SelLength = re->TextLength - re->LineCount + 1;
+  re->SelLength = utils->GetTextLength(re);
   utils->PopOnChange(re);
 }
 //---------------------------------------------------------------------------
@@ -2087,7 +2087,7 @@ PASTESTRUCT __fastcall TReplaceTextForm::EditCutCopy(bool bCut, bool bCopy)
       utils->SetOldLineVars(re);
 
       // No more text
-      if (re->TextLength == 0 || EditString[idx].Length() == 0)
+      if (re->LineCount == 0 || EditString[idx].Length() == 0)
         re->Clear();
 
       re->Modified = true;
@@ -2154,7 +2154,7 @@ PASTESTRUCT __fastcall TReplaceTextForm::EditPaste(WideString S)
 
   // If the user is pasting raw-codes only into an empty control
   // we want to be in V_IRC, not V_RTF! (EditFind should never be in V_RTF!)
-  if (re->View == V_RTF && re->TextLength == 0 && utils->GetRealLength(S) == 0)
+  if (re->View == V_RTF && re->LineCount == 0 && utils->GetRealLength(S) == 0)
     SetView(re, V_IRC);
 
   // Strip codes if it's a Find and the main view is V_RTF
@@ -2222,7 +2222,7 @@ PASTESTRUCT __fastcall TReplaceTextForm::EditPaste(WideString S)
 
           // ...stop the pesky "phantom" colored space at the end of
           // RTF text
-          if (re->SelStart == (int)re->TextLength - (int)re->LineCount + 1)
+          if (re->SelStart == utils->GetTextLength(re))
           {
             re->SelLength = 1;
             re->SelAttributes->BackColor = clWindow;

@@ -551,7 +551,7 @@ bool __fastcall TPlayback::MoveTextToYahooBuffer(wchar_t* &pBuf, int &iSize)
       if (tae->SelLength)
         textLen = tae->SelLength;
       else
-        textLen = tae->TextLength - tae->LineCount + 1;
+        textLen = utils->GetTextLength(tae);
 
       if (textLen > 0)
       {

@@ -15,8 +15,14 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.45" // Unicode Version
+#define REVISION "7.46" // Unicode Version
 
+// December 11, 2018, 7.46, I changed how GetTextLength() works in the TaeEdit
+// component which required changes in Utils.cpp SetOldLineVars() and GetInfoOC().
+// Found and fixed bad bug in StringsW.cpp in CDText(TPoint, TPoint, bool). I 
+// noticed "cut" of text was leaving a line undeleted if you selected to the
+// very end of text. Fixed.
+//
 // December 8, 2018, 7.45, Entering Unicode characters manually by typing four
 // hex digits and Alt+X was not working. Changes made to TaeEditChange(). Also
 // took out an unnecessary space in the code-highlighting in ConvertToHLT.cpp.
@@ -113,7 +119,8 @@ enum tBlendDirection {LTR, CENTER1, CENTER2, RTL};
 #define SECURITY_ON false
 
 // NOTE: With debug ON the main edit won't always be focused!
-#define DEBUG_ON false // Include a debug console, use DTSColor->CWrite("")
+#define DEBUG_ON true // Include a debug console, use DTSColor->CWrite("")
+#define ISRADSTUDIO false // Set false for Borland C++ Builder 4, true for Embarcadero RAD Studio
 
 #define DIAG_SHOWHEX_IS_UTF8 false // Tools->ShowHex converts UTF-8 to ANSI in main window...
 

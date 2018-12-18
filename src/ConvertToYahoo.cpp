@@ -92,7 +92,7 @@ int __fastcall TConvertToYahoo::Execute(bool bShowStatus)
       delete sl;
 
       // Unless user cancelled we are ok
-      if (ReturnValue == 0) // Move new strings to MS_HTM
+      if (ReturnValue == 0) // Move new strings to SL_HTM
         dts->SL_HTM->Text = Temp;
     }
     catch(...)

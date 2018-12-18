@@ -96,7 +96,7 @@ bool __fastcall TPrintPreview::Preview(TTaeRichEdit* re)
 // note: this did not work before but then I discovered that TextLength includes
 // a count of 2 for each line-terminator - so - just adding that... below
 // but have not tried it yet :-)
-      //fr.chrg.cpMax = tae->TextLength - tae->LineCount + 1;
+      //fr.chrg.cpMax = utils->GetTextLength(tae);
     }
 
     BOOL fSuccess = TRUE;

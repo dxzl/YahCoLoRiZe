@@ -342,7 +342,7 @@ bool __fastcall TSpellCheckForm::SpellCheck(void)
       return false;
     }
 
-    if (tae->TextLength == 0)
+    if (tae->LineCount == 0)
     {
       // "There is no text to process...", // 45
       utils->ShowMessageU(DS[45]);

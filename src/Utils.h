@@ -307,6 +307,7 @@ public:
   int __fastcall GetNextNonspaceRealIdx(WideString S, int Idx);
   int __fastcall GetLastNoncodeBufferIdx(wchar_t* pBuf, int iSize);
   int __fastcall GetLastNoncodeBufferIdx(WideString S);
+  long __fastcall GetTextLength(TTaeRichEdit* re);
   int __fastcall GetLine(TTaeRichEdit* re);
   int __fastcall CountChar(WideString S, wchar_t Code);
   int __fastcall CountChar(wchar_t* pBuf, int iSize, wchar_t Code);

@@ -52,8 +52,12 @@ __fastcall TStringsW::TStringsW(void)
 __fastcall TStringsW::TStringsW(WideString wIn)
 // constructor
 {
-  TStringsW();
-  SetText(wIn);
+// Can't do this in the new RAD Studio...
+//  TStringsW();
+  pTList = new TList();
+  m_length = 0;
+
+  this->SetText(wIn);
 }
 //---------------------------------------------------------------------------
 __fastcall TStringsW::~TStringsW(void)
@@ -137,8 +141,8 @@ TPoint __fastcall TStringsW::SetStringEx(WideString s, long idx, bool bAddState)
 {
   long saveLen = this->GetLength(); // use the function or cr/lfs are not added!
   long saveLineCt = this->GetLineCount();
-//DTSColor->CWrite("\r\nsaveLen: " + String(saveLen) + "\r\n");
-//DTSColor->CWrite("\r\nsaveLineCt: " + String(saveLineCt) + "\r\n");
+//DTSColor->CWrite("\r\nsaveLen: " + AnsiString(saveLen) + "\r\n");
+//DTSColor->CWrite("\r\nsaveLineCt: " + AnsiString(saveLineCt) + "\r\n");
 
   // y will have the increase in lines, x will be new length including any
   // state-strings added
@@ -183,7 +187,7 @@ TPoint __fastcall TStringsW::SetStringEx(WideString s, long idx, bool bAddState)
         }
       }
       else if (s[jj] != C_LF)
-        wTemp += s[jj];
+        wTemp += WideString(s[jj]);
     }
 
     // add last string (DO NOT CHECK IF EMPTY)
@@ -214,8 +218,8 @@ TPoint __fastcall TStringsW::SetStringEx(WideString s, long idx, bool bAddState)
   else
     this->SetString(s, idx);
 
-//DTSColor->CWrite("\r\nthis->GetLength(): " + String(this->GetLength()) + "\r\n");
-//DTSColor->CWrite("\r\nthis->GetLineCount(): " + String(this->GetLineCount()) + "\r\n");
+//DTSColor->CWrite("\r\nthis->GetLength(): " + AnsiString(this->GetLength()) + "\r\n");
+//DTSColor->CWrite("\r\nthis->GetLineCount(): " + AnsiString(this->GetLineCount()) + "\r\n");
   p.x = this->GetLength() - saveLen; // return # chars added
   p.y = this->GetLineCount() - saveLineCt; // return # lines added
 
@@ -307,7 +311,7 @@ WideString __fastcall TStringsW::GetText(void)
   int len = this->TotalLength;
   if (len != testLen)
     DTSColor->CWrite("\r\nTStringsW::GetText(): TotalLength is: " +
-            String(TotalLength) + " should be: " + String(testLen) + CRLF);
+            AnsiString(TotalLength) + " should be: " + AnsiString(testLen) + CRLF);
 #endif
 
   return sOut;
@@ -337,7 +341,7 @@ void __fastcall TStringsW::SetText(WideString s)
       sOut.Empty();
     }
     else if (c != C_CR)
-      sOut += c;
+      sOut += WideString(c);
   }
 
   // add any remaining text
@@ -378,7 +382,7 @@ void __fastcall TStringsW::Clear(void)
 #if DEBUG_ON
       else
         DTSColor->CWrite("\r\nTStringsW::Clear(): Null string pointer at: " +
-                                                      String(ii) + CRLF);
+                                                      AnsiString(ii) + CRLF);
 #endif
     }
 
@@ -493,7 +497,7 @@ void __fastcall TStringsW::AddStrings(TStringsW* sl)
 // Convert to UTF8 and save in TMemoryStream
 bool __fastcall TStringsW::SaveToStream(TMemoryStream* ms)
 {
-  String s = utils->WideToUtf8(this->Text);
+  AnsiString s = utils->WideToUtf8(this->Text);
   return ms->Write(s.c_str(), s.Length());
 }
 //---------------------------------------------------------------------------
@@ -633,6 +637,10 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, long charCount,
   {
 #if DEBUG_ON
     DTSColor->CWrite("\r\nError1: CDText(TPoint locStart, int charCount)\r\n");
+    DTSColor->CWrite("\r\nlineCount:" + String(lineCount) +
+                  ", locStart.x:" + String(locStart.x) +
+                  ", locStart.y:" + String(locStart.y) +
+                  " charCount:" + String(charCount) + "\r\n");
 #endif
     return "";
   }
@@ -671,6 +679,7 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, long charCount,
     if (ii >= lineCount)
     {
       endLine = lineCount-1;
+
       p = (TStringW*)this->pTList->Items[endLine];
       endOffset = p->S.Length();
     }
@@ -681,11 +690,11 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, long charCount,
     }
 
 //#if DEBUG_ON
-//    DTSColor->CWrite("\r\nlen: " + String(len) + "\r\n");
-//    DTSColor->CWrite("\r\nprevLen: " + String(prevLen) + "\r\n");
-//    DTSColor->CWrite("\r\ncharCount: " + String(charCount) + "\r\n");
-//    DTSColor->CWrite("\r\nendIdx: " + String(endIdx) + "\r\n");
-//    DTSColor->CWrite("\r\nendOffset: " + String(endOffset) + "\r\n");
+//    DTSColor->CWrite("\r\nlen: " + String(len));
+//    DTSColor->CWrite("\r\nprevLen: " + String(prevLen));
+//    DTSColor->CWrite("\r\ncharCount: " + String(charCount));
+//    DTSColor->CWrite("\r\nendIdx: " + String(endIdx));
+//    DTSColor->CWrite("\r\nendOffset: " + String(endOffset));
 //    DTSColor->CWrite("\r\nendLine: " + String(endLine) + "\r\n");
 //#endif
 
@@ -711,7 +720,17 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, TPoint locEnd,
 
   if (!lineCount || locStart.x < 0 || locEnd.x < 0 ||
                     locStart.y >= lineCount || locEnd.y >= lineCount)
+  {
+//#if DEBUG_ON
+//    DTSColor->CWrite("\r\nError1: CDText(TPoint locStart, TPoint locEnd)\r\n");
+//    DTSColor->CWrite("\r\nlineCount:" + String(lineCount) +
+//                  ", locStart.x:" + String(locStart.x) +
+//                  ", locStart.y:" + String(locStart.y) +
+//                  ", locEnd.x:" + String(locEnd.x) +
+//                  ", locEnd.y:" + String(locEnd.y) + "\r\n");
+//#endif
     return "";
+  }
 
   WideString wCopy;
 
@@ -721,10 +740,10 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, TPoint locEnd,
   long endOffset = locEnd.x;
 
 //#if DEBUG_ON
-//  DTSColor->CWrite("\r\nlineCount: " + String(lineCount) + "\r\n");
-//  DTSColor->CWrite("\r\nstartLine: " + String(startLine) + "\r\n");
-//  DTSColor->CWrite("\r\nstartOffset: " + String(startOffset) + "\r\n");
-//  DTSColor->CWrite("\r\nendLine: " + String(endLine) + "\r\n");
+//  DTSColor->CWrite("\r\nlineCount: " + String(lineCount));
+//  DTSColor->CWrite("\r\nstartLine: " + String(startLine));
+//  DTSColor->CWrite("\r\nstartOffset: " + String(startOffset));
+//  DTSColor->CWrite("\r\nendLine: " + String(endLine));
 //  DTSColor->CWrite("\r\nendOffset: " + String(endOffset) + "\r\n");
 //#endif
 
@@ -771,6 +790,11 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, TPoint locEnd,
   }
   else // Delete mode
   {
+//#if DEBUG_ON
+//  DTSColor->CWrite("\r\nstartLine: " + String(startLine) + " startOffset:" +
+//    String(startOffset) + " endLine:" + String(endLine) + " endOffset:" +
+//      String(endOffset));
+//#endif
     try
     {
       TStringW* p;
@@ -782,10 +806,9 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, TPoint locEnd,
       // Get last substring
       p = (TStringW*)this->pTList->Items[endLine];
       wLast = p->S.SubString(endOffset+1, p->S.Length()-endOffset);
-
-//  #if DEBUG_ON
-//      DTSColor->CWrite("\r\nwLast: \"" + wLast + "\"\r\n");
-//  #endif
+//#if DEBUG_ON
+//    DTSColor->CWrite("\r\nwLast: \"" + wLast + "\"\r\n");
+//#endif
 
       if (startLine == endLine)
       {
@@ -800,23 +823,49 @@ WideString __fastcall TStringsW::CDText(TPoint locStart, TPoint locEnd,
       // Get first substring
       p = (TStringW*)this->pTList->Items[startLine];
       wFirst = p->S.SubString(1, startOffset);
-
-//  #if DEBUG_ON
+//#if DEBUG_ON
 //      DTSColor->CWrite("\r\nwFirst: \"" + wFirst + "\"\r\n");
-//  #endif
+//#endif
 
-      // delete lines
+      // !!!!!!!!!! Had to fix/redo the code below 12/14/2018 ----------
+      // NOTE: I'm not happy with this at all. It is a workaround for
+      // a peculiarity of Microsoft's rich-edit control. The control
+      // LineCount does not change when a new-line is entered or deleted.
+      // LineCount changes when the first char of a new line is typed or the
+      // last char in a line is deleted, not the line itself. So everything below
+      // is just to "make it work" - allow us to track the characters and
+      // add/remove them to out SL_IRC or SL_ORG string-lists intermingled with
+      // our own color/text format codes...
+
+      // delete last line if entire line selected
+      if (wLast.IsEmpty())
+      {
+        if (startLine == 0 && startOffset == 0)
+          endLine--;
+        else
+        {
+          this->Delete(endLine);
+
+          if (!wFirst.IsEmpty())
+            endLine--;
+        }
+      }
+
+      // delete in-between lines
       for (long ii = startLine+1; ii <= endLine; ii++)
         this->Delete(startLine+1);
 
-      // concatinate first and last substrings
-      if (!wFirst.IsEmpty() || !wLast.IsEmpty())
+      // concatenate first and last substrings
+      if (wFirst.IsEmpty() && wLast.IsEmpty())
+        this->Delete(startLine);
+      else
         this->SetString(wFirst+wLast, startLine);
+      //----------------------------------------------------------------
     }
     catch(...)
     {
 #if DEBUG_ON
-      DTSColor->CWrite("\r\nException: DeleteText(TPoint locStart, TPoint locEnd)\r\n");
+      DTSColor->CWrite("\r\nException: utils->CDText(TPoint locStart, TPoint locEnd)\r\n");
 #endif
     }
   }
@@ -843,7 +892,7 @@ void __fastcall TStringsW::Delete(long idx)
       {
 #if DEBUG_ON
         DTSColor->CWrite("\r\nTStringsW::Delete(): m_length < 0: " +
-                                                  String(m_length) + "\r\n");
+                                                  AnsiString(m_length) + "\r\n");
 #endif
         m_length = 0;
       }
@@ -917,7 +966,7 @@ bool __fastcall TStringsW::SaveToFile(WideString path, bool bAnsi)
 // bAnsi defaults false
 {
   if (bAnsi)
-    return utils->WriteStringToFileW(path, String(this->Text));
+    return utils->WriteStringToFileW(path, AnsiString(this->Text));
 
   return utils->WriteStringToFileW(path, utils->WideToUtf8(this->Text));
 }
@@ -1018,7 +1067,7 @@ String __fastcall TStringsW::ReadStringFromFileW(WideString wPath)
       int n = fread(buf, 1, length, f);
 
       if (n == length)
-        sOut = String(buf, length);
+        sOut = AnsiString(buf, length);
     }
   }
   __finally
@@ -1055,7 +1104,7 @@ String __fastcall TStringsW::WideToUtf8(WideString sIn)
     nLenUtf8,
     NULL, NULL); // Unrepresented char replacement - Use Default
 
-  String sOut = String(buf, nLenUtf8); // there is no null written...
+  AnsiString sOut = AnsiString(buf, nLenUtf8); // there is no null written...
   delete [] buf;
 
   return sOut;
@@ -1066,10 +1115,10 @@ String __fastcall TStringsW::WideToUtf8(WideString sIn)
 WideString __fastcall TStringsW::Utf8ToWide(char* buf, int len)
 // Code to convert UTF-8 to UTF-16 (wchar_t)
 {
-  return Utf8ToWide(String(buf, len));
+  return Utf8ToWide(AnsiString(buf, len));
 }
 
-WideString __fastcall TStringsW::Utf8ToWide(String sIn)
+WideString __fastcall TStringsW::Utf8ToWide(AnsiString sIn)
 // Code to convert UTF-8 to UTF-16 (wchar_t)
 {
   WideString sWide;

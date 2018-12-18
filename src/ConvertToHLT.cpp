@@ -34,7 +34,8 @@ TConvertToHLT* ConvertToHLT = NULL;;
 // The resulting stream is usually then loaded back into the Rich-Edit
 // control using re->Lines->LoadFromStream(ms) to show IRC code-highlighting.
 
-__fastcall TConvertToHLT::TConvertToHLT(TComponent* Owner, TMemoryStream* MS, TTaeRichEdit* RE)
+__fastcall TConvertToHLT::TConvertToHLT(TComponent* Owner,
+                              TMemoryStream* MS, TaeRichEdit* RE)
 {
   this->dts = static_cast<TDTSColor*>(Owner);
 
@@ -59,6 +60,7 @@ int __fastcall TConvertToHLT::Execute(bool bShowStatus)
   if (bShowStatus)
     dts->CpShow(STATUS[9], DS[70]);
 
+//  MS_Temp = NULL;
   MS_Temp = new TMemoryStream();
 
   int ReturnValue;
@@ -82,16 +84,18 @@ int __fastcall TConvertToHLT::Execute(bool bShowStatus)
       // RTF keywords are not used (only keywords common to all
       // languages are used).
       //
-      // Stream, SelectionOnly, PlainText, NoObjects, PlainRTF
-      re->CopyToStream(MS_Temp, false, false, true, false);
+      re->CopyToStream(MS_Temp, false, false, true, true);
+//!!!!!!!!!!!!!!!!!!!!!
+//utils->ShowMessageW(utils->StreamToStringA(MS_Temp));
 
       // Test code to view this RTF file!!!!!!!!!!!!!!!!
-      //MS_Temp->Position = 0;
-      //DTSColor->TaeEdit->Clear();
-      //DTSColor->TaeEdit->PasteFromStream( MS_Temp, false, true, true );
-      //return(0);
+//       MS_Temp->Position = 0;
+//       tae->Clear();
+//       tae->PasteFromStream(MS_Temp, false, true, true );
+//       ShowMessage("pause");
+//       return(0);
 
-      if (!MS_Temp->Size)
+      if (!MS_Temp || !MS_Temp->Size)
         return 2; // Error
 
       ReturnValue = ScanForString("{\\colortbl", MS_Temp, true, bShowStatus);
@@ -121,6 +125,8 @@ int __fastcall TConvertToHLT::Execute(bool bShowStatus)
         ReplaceColortbl();
         ReturnValue = ScanForCtrlK(MS_Temp);
       }
+//!!!!!!!!!!!!!!!!!!!!!
+//utils->ShowMessageW(utils->StreamToStringA(ms));
     }
     catch(...)
     {
@@ -143,16 +149,21 @@ int __fastcall TConvertToHLT::Execute(bool bShowStatus)
 //---------------------------------------------------------------------------
 void __fastcall TConvertToHLT::ReplaceColortbl(void)
 {
-  // Make an RTF color-palette from DTSColor->Palette[]
-  String ColorTbl = "{\\colortbl;";
-  String Temp, Red, Green, Blue;
+  // Make an RTF color-palette from dts->Palette[]
+  AnsiString ColorTbl = "{\\colortbl;";
+  AnsiString Temp, Red, Green, Blue;
 
   int iRed, iGreen, iBlue;
 
-  for (int ii = 0; ii < DTSColor->PaletteSize; ii++)
+  int colors[2];
+  //colors[0] = -utils->YcToRgb(dts->Afg); // default
+  colors[0] = -utils->YcToRgb(IRCBLACK); // default
+  colors[1] = -utils->YcToRgb(HIGHLIGHT_COLOR);
+
+  for (int ii = 0; ii < 2; ii++)
   {
     // RGB Palette entry
-    Temp = IntToHex(DTSColor->Palette[ii], 6);
+    Temp = IntToHex(colors[ii], 6);
 
     Red = "0x" + String(Temp[1]) + String(Temp[2]);
     Green = "0x" + String(Temp[3]) + String(Temp[4]);
@@ -162,16 +173,16 @@ void __fastcall TConvertToHLT::ReplaceColortbl(void)
     iGreen = Green.ToIntDef(0);
     iBlue = Blue.ToIntDef(0);
 
-    ColorTbl += "\\red" + String(iRed) +
-                  "\\green" + String(iGreen) +
-                          "\\blue" + String(iBlue) + ";\r\n";
+    ColorTbl += "\\red" + AnsiString(iRed) +
+                  "\\green" + AnsiString(iGreen) +
+                          "\\blue" + AnsiString(iBlue) + ";\r\n";
   }
 
   ColorTbl += "}";
 
   ms->WriteBuffer(ColorTbl.c_str(), ColorTbl.Length());
 
-  String Gen = "{\\*\\generator YahCoLoRiZe " + String(REVISION) + ";}";
+  AnsiString Gen = "{\\*\\generator YahCoLoRiZe " + String(REVISION) + ";}";
   ms->WriteBuffer(Gen.c_str(), Gen.Length());
 }
 //---------------------------------------------------------------------------
@@ -184,7 +195,7 @@ int __fastcall TConvertToHLT::ScanForString(char CompareStr[],
 // input and output streams.
 //
 // Setting bWrite will scan MS_Temp from the current
-// position looking for the string and will not affect DTSColor->MS_RTF
+// position looking for the string and will not affect dts->MS_RTF
 //
 // Returns 1 if user-cancel, 2 if no match and 0 if match
 {
@@ -237,25 +248,19 @@ int __fastcall TConvertToHLT::ScanForCtrlK(TMemoryStream * MS_Temp)
 
 // Returns 1 if user-cancel, 2 if error and 0 if success
 {
-  char Data[15];
+  char Data[4]; // 3 chars and null "'03" is all we use...
   char c;
   int BytesRead;
-
-  int Color = dts->cColor;
-  if (Color <= 0 || Color > DTSColor->PaletteSize) Color = IRCBLACK;
-
-  int HlColor = HIGHLIGHT_COLOR;
-  if (HlColor <= 0 || HlColor > DTSColor->PaletteSize) HlColor = IRCRED;
 
   // X is a placeholder!!!
   // NOTE: Don't need to leave a space before X because we have another
   // command directly following this one!
-  //String Temp = "cf" + String(HlColor) + " X";
-  String Temp = "cf" + String(HlColor) + "X";
+  //AnsiString Temp = "cf" + String(HlColor) + " X";
+  AnsiString Temp = "cf2X";
   int HlIdx = Temp.Length(); // 1-based index of X
 
   // Back to regular color...
-  Temp += "\\cf" + String(Color) + " ";
+  Temp += "\\cf1 "; // space needed here...
 
   try
   {

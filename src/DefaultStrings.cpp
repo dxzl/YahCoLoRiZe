@@ -1251,7 +1251,7 @@ const char* DS[TOTALSTRINGS] =
 "Alternate Colors", // 24
 "Randomize Colors", // 25
 
-"", // 26
+"Press to pause text-play.", // 26
 
 // ProcessButton->Hint = XX->Strings[27];
 "Convert the highlighted text to a\n"

@@ -2034,7 +2034,7 @@ PASTESTRUCT __fastcall TWingEditForm::EditPaste(WideString S)
 
   // If the user is pasting raw-codes only into an empty control
   // we want to be in V_IRC, not V_RTF! (EditFind should never be in V_RTF!)
-  if (Edit1->View == V_RTF && Edit1->TextLength == 0 &&
+  if (Edit1->View == V_RTF && Edit1->LineCount == 0 &&
                                                 utils->GetRealLength(S) == 0)
     SetView(V_IRC);
 
@@ -2099,7 +2099,7 @@ PASTESTRUCT __fastcall TWingEditForm::EditPaste(WideString S)
 
           // ...stop the pesky "phantom" colored space at the end of
           // RTF text
-          if (Edit1->SelStart == (int)Edit1->TextLength-(int)Edit1->Line)
+          if (Edit1->SelStart == utils->GetTextLength(Edit1) + 1)
           {
             Edit1->SelLength = 1;
             Edit1->SelAttributes->BackColor = clWindow;
@@ -2174,10 +2174,10 @@ void __fastcall TWingEditForm::MenuEditSelectAllClick(TObject *Sender)
     return;
   }
 
-  if (Edit1->TextLength)
+  if (Edit1->LineCount > 0)
   {
     Edit1->SelStart = 0;
-    Edit1->SelLength = Edit1->TextLength - Edit1->LineCount + 1;
+    Edit1->SelLength = utils->GetTextLength(Edit1);
   }
 }
 //---------------------------------------------------------------------------
@@ -2190,7 +2190,7 @@ void __fastcall TWingEditForm::MenuViewRtfClick(TObject *Sender)
   int iFirst;
 
   // Set Cursor in rich-text to the same point as cursor in plain text
-  if (Edit1->SelStart == (int)Edit1->TextLength - Edit1->LineCount + 1)
+  if (Edit1->SelStart >= Edit1->TextLength)
     iFirst = -1; // set cursor to end
   else
     iFirst = utils->GetRealIndex(EditString, Edit1->SelStart+Edit1->Line);
