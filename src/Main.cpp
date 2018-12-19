@@ -10454,7 +10454,7 @@ void __fastcall TDTSColor::MenuOptimizeClick(TObject *Sender)
     }
 
     // Save original position and carat
-    TYcPosition* p = new TYcPosition(tae);
+    TTaePosition* p = new TTaePosition(tae);
     p->SavePos = p->Position;
     utils->Optimize(true);
     p->Position = p->SavePos;

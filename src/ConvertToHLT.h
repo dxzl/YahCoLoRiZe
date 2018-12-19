@@ -19,7 +19,7 @@ private:
   TDTSColor* dts; // easy pointer to main form...
 
 public:
-  __fastcall TConvertToHLT(TComponent* Owner, TMemoryStream * MS, TTaeRichEdit * RE);
+  __fastcall TConvertToHLT(TComponent *Owner, TMemoryStream *MS, TTaeRichEdit *RE);
   __fastcall ~TConvertToHLT(void);
 
   int __fastcall Execute(bool bShowStatus);

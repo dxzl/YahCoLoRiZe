@@ -57,7 +57,8 @@ bool __fastcall TOptimizer::StripRedundantFgRGB(WideString &S, bool bShowStatus)
   return bRet;
 }
 //---------------------------------------------------------------------------
-bool __fastcall TOptimizer::StripRedundantFgRGB(wchar_t* pOld, int &OldSize, bool bShowStatus)
+bool __fastcall TOptimizer::StripRedundantFgRGB(wchar_t* &pOld,
+                                     int &OldSize, bool bShowStatus)
 // Call this after the main Execute routine to analyze the text for
 // unneccessary RGB Foreground colors in front of spaces.
 

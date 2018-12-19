@@ -34,8 +34,7 @@ TConvertToHLT* ConvertToHLT = NULL;;
 // The resulting stream is usually then loaded back into the Rich-Edit
 // control using re->Lines->LoadFromStream(ms) to show IRC code-highlighting.
 
-__fastcall TConvertToHLT::TConvertToHLT(TComponent* Owner,
-                              TMemoryStream* MS, TaeRichEdit* RE)
+__fastcall TConvertToHLT::TConvertToHLT(TComponent *Owner, TMemoryStream *MS, TTaeRichEdit *RE)
 {
   this->dts = static_cast<TDTSColor*>(Owner);
 
