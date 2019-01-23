@@ -9,7 +9,7 @@
 
 // Product ID is unique to each product from DTS
 // Super Rev. is bumped up (hidden from user) to draw a
-// line between possibly incompatable sub-versions
+// line between possibly incompatible sub-versions
 // of the Product. So THIS program will run ONLY with
 // a key with the proper Product ID and Super-Rev #.
 

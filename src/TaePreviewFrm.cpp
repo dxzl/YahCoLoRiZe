@@ -87,6 +87,7 @@ __fastcall TTaePreviewForm::TTaePreviewForm(TComponent* Owner)
   Page1 = new TTaePreviewWindow(this);
   Page2 = new TTaePreviewWindow(this);
   Page3 = new TTaePreviewWindow(this);
+
   Page1->Parent = ClientPanel;
   Page2->Parent = ClientPanel;
   Page3->Parent =  ScrollBox;
@@ -95,6 +96,10 @@ __fastcall TTaePreviewForm::TTaePreviewForm(TComponent* Owner)
   Page1->Align = alNone;
   Page2->Align = alNone;
   Page3->Align = alNone;
+
+  Page1->TaeRichEdit = FRichEdit;
+  Page2->TaeRichEdit = FRichEdit;
+  Page3->TaeRichEdit = FRichEdit;
 
   // set the margins for the zoom window to the width/height of a title bar
   // button (arbitrary -- change if you want)
@@ -150,10 +155,9 @@ __fastcall TTaePreviewForm::~TTaePreviewForm()
   // dispose of dc
   ::DeleteDC(Hdc);
 
-  // make sure nobody is trying to use FRichEdit
-  Page1->TaeRichEdit = FRichEdit;
-  Page2->TaeRichEdit = FRichEdit;
-  Page3->TaeRichEdit = FRichEdit;
+  if (Page1) delete Page1;
+  if (Page2) delete Page2;
+  if (Page3) delete Page3;
 }
 //---------------------------------------------------------------------------
 void __fastcall TTaePreviewForm::SetCorrectionX(int Value)
@@ -171,6 +175,11 @@ int __fastcall TTaePreviewForm::Execute(TTaeRichEdit* taeRichEdit)
   // set the FRichEdit variable for the form -- quick out if not valid
   FRichEdit = taeRichEdit;
   if (!FRichEdit || !FRichEdit->FRichEditPrint) return mrAbort;
+
+  // this property calls SetRichEdit() in TaePreviewFrm.h 
+  Page1->TaeRichEdit = FRichEdit;
+  Page2->TaeRichEdit = FRichEdit;
+  Page3->TaeRichEdit = FRichEdit;
 
   // Prior to calling Execute, set the properties CorrectionX and CorrectionY!
 

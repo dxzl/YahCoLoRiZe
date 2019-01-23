@@ -15,8 +15,12 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.46" // Unicode Version
+#define REVISION "7.47" // Unicode Version
 
+// January 13, 2019, 7.47, CpUpdate() in Main.cpp was very slow in the RAD
+// Studio version so we now only update the progress bar if it has changed
+// position.
+//
 // December 11, 2018, 7.46, I changed how GetTextLength() works in the TaeEdit
 // component which required changes in Utils.cpp SetOldLineVars() and GetInfoOC().
 // Found and fixed bad bug in StringsW.cpp in CDText(TPoint, TPoint, bool). I 
@@ -119,7 +123,7 @@ enum tBlendDirection {LTR, CENTER1, CENTER2, RTL};
 #define SECURITY_ON false
 
 // NOTE: With debug ON the main edit won't always be focused!
-#define DEBUG_ON true // Include a debug console, use DTSColor->CWrite("")
+#define DEBUG_ON false // Include a debug console, use DTSColor->CWrite("")
 #define ISRADSTUDIO false // Set false for Borland C++ Builder 4, true for Embarcadero RAD Studio
 
 #define DIAG_SHOWHEX_IS_UTF8 false // Tools->ShowHex converts UTF-8 to ANSI in main window...

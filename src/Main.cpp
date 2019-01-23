@@ -11448,6 +11448,9 @@ void __fastcall TDTSColor::CpSetMaxIterations(int maxIterations)
 void __fastcall TDTSColor::CpUpdate(int Value)
 // Set bProgress to show progress bar
 {
+  // NOTE: this was adding HUGE processing-time in RAD Studio - the cause is
+  // setting the GUI Position property when it has not changed. So I added
+  // "if" statements for that. Much improved!
   if (FCpMaxIterations > 0)
   {
     int CpPos = (Value*100)/FCpMaxIterations;
@@ -11455,8 +11458,10 @@ void __fastcall TDTSColor::CpUpdate(int Value)
     if (FCpTotalSections > 0 && FCpCurrentSection <= FCpTotalSections)
     {
       int MainPos = (((FCpCurrentSection-1)*100)+CpPos)/FCpTotalSections;
-      CpProgressBar->Position = CpPos;
-      MainProgressBar->Position = MainPos;
+      if (CpProgressBar->Position != CpPos)
+        CpProgressBar->Position = CpPos;
+      if (MainProgressBar->Position != MainPos)
+        MainProgressBar->Position = MainPos;
     }
     else // to just use the main progress bar set FCpMaxValue only...
       MainProgressBar->Position = CpPos;
