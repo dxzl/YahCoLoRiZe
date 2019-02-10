@@ -97,6 +97,7 @@ __fastcall TTaePreviewForm::TTaePreviewForm(TComponent* Owner)
   Page2->Align = alNone;
   Page3->Align = alNone;
 
+  // make sure nobody is trying to use FRichEdit
   Page1->TaeRichEdit = FRichEdit;
   Page2->TaeRichEdit = FRichEdit;
   Page3->TaeRichEdit = FRichEdit;
@@ -175,11 +176,6 @@ int __fastcall TTaePreviewForm::Execute(TTaeRichEdit* taeRichEdit)
   // set the FRichEdit variable for the form -- quick out if not valid
   FRichEdit = taeRichEdit;
   if (!FRichEdit || !FRichEdit->FRichEditPrint) return mrAbort;
-
-  // this property calls SetRichEdit() in TaePreviewFrm.h 
-  Page1->TaeRichEdit = FRichEdit;
-  Page2->TaeRichEdit = FRichEdit;
-  Page3->TaeRichEdit = FRichEdit;
 
   // Prior to calling Execute, set the properties CorrectionX and CorrectionY!
 

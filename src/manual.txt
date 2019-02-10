@@ -1,0 +1,81 @@
+Welcome to 11,08Y07a09hC01o02L03o04R05i06Z07e for 04P05alta01lk/IRC
+Chat as well as for creative 13,09WEB DEVEL12OPERS13!
+
+To get started quickly, click the Clients menu and
+choose the chat-client you are using. Use the right mouse
+button in this window and paste in contents from the clipboard
+which you can copy from your internet browser, or fantasy
+role-play files, chat-logs, song-lyrics, etc.
+
+(IMPORTANT: The Full power, text-effects and full-spectrum colors
+YahCoLoRiZe is capable of only work when you select Trinity
+in the Clients menu... most IRC Clients are limited to
+16 colors.)
+
+Click the Play menu item and click Options. Here you
+can set the text playback speed and the chat-room you want
+to send text into.
+
+Press the Process button in the Process tab to format
+your text. Processing adds wingdings and borders to the text (if
+enabled) and re-arranges it to a particular width. Click the
+Show button to convert IRC-Codes text to RTF (Rich-Text)
+without actually processing the text.
+
+Now you can play back the color-text into the chat-room by
+clicking the 09green Play button. Connect to Paltalk
+or IRC and try it! For Paltalk set the BG (background) color to
+White! To change the text color, click on the colored-panel that
+says "FG" in the Process tab.
+
+If you are creating ASCII art, you need to check the Left
+Justify box under the Format tab and also uncheck
+Wings. If you are re-rendering an existing ASCII art file,
+check Auto (line-width) in the Width tab.
+
+After processing, you can highlight text by left-clicking
+and then dragging the mouse over the text. Now go the
+Effects menu and choose one of many text-effects such as
+alternating the foreground/background colors.
+
+The program SwiftMiX can send song-information to YahCoLoRiZe
+which you can then send to your chat room. To use this, run
+both SwiftMiX and YahCoLoRiZe. In SwiftMiX, click Send Timing
+Telemetry in the Options menu. Load a song and play it. Now
+in YahCoLoRiZe right click in the main window and click the
+pop-up menu item Process SwiftMiX Song Title.
+
+The song-information will appear in the main window and is
+processed automatically. To edit the text, select "Original"
+in the View menu. Do your editing and click the Process
+button in the Process tab. Now you can play it to a chat-room
+by clicking the 09green play button.
+
+(Note: you can edit the SwiftMiX song-format by right-clicking the
+file "\Documents and Settings\All Users\Application Data\Discrete-Time
+Systems\YahCoLoRiZe\colorize.ini" and choose Open With->Notepad.)
+
+You can export the text to a web-page by choosing File
+and Export As Web-Page. To copy color-text to e-mail,
+simply select the text, right-click Copy then right-click Paste
+it into your e-mail.
+
+You can remotely send text to YahCoLoRiZe from your chat-client
+by adding a script, alias or plugin (depending on which chat-client
+you are using). For help, click Help->Web-Site then click the client
+you want help for.
+
+To enter special Unicode characters, type in the 4-digit hex code and
+press Alt+X. Example: type 231a followed by Alt+X gives you a watch: ⌚ :)
+
+To Uninstall: Go to "Apps and Features", scroll down to YahCoLoRiZe,
+click it and select Uninstall.
+
+For additional help, E-Mail: dxzl@live.com or visit my web-site.
+
+YahCoLoRiZe is a native IRC (mIRC) text-editor. This document was
+written and saved to a file using YahCoLoRiZe.
+
+Try some experimenting with different settings and have fun!
+
+(www.YahCoLoRiZe.com)

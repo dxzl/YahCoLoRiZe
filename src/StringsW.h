@@ -10,7 +10,7 @@
 #define INCLUDE_UTILS false
 //---------------------------------------------------------------------------
 
-class TStringW
+class TStringW : TStringList
 {
 private:
   WideString s;

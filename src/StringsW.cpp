@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 // YahCoLoRiZe - Edit, process and send colorized text into IRC chat-rooms
-// via various chat-clients such as mIRC, IceCHat and LeafCHat
+// via various chat-clients such as mIRC, IceChat and LeafChat
 //
 // Author: Scott Swift
 //
@@ -15,7 +15,7 @@
 #include "StringsW.h"
 
 #if INCLUDE_UTILS
-#include <stdio.h> // Used in the TaeRichEdit build...
+#include <stdio.h> // Used in the YcEdit build...
 #else
 #include "Main.h" // Used only in the Yahcolorize build...
 #endif

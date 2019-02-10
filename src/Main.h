@@ -15,15 +15,14 @@
 #ifndef MainH
 #define MainH
 //---------------------------------------------------------------------------
-#define REVISION "7.47" // Unicode Version
-
-// January 13, 2019, 7.47, CpUpdate() in Main.cpp was very slow in the RAD
-// Studio version so we now only update the progress bar if it has changed
-// position.
+#define REVISION "7.48" // Unicode Version
+// February 8, 2019, 7.48, I've been porting YahCoLoRiZe C++ Builder 4 to
+// Embarcadero RAD Studio C++ Builder community edition and I found that the
+// progress-bar was using a lot more processing power than was necessary. Fixed.
 //
 // December 11, 2018, 7.46, I changed how GetTextLength() works in the TaeEdit
 // component which required changes in Utils.cpp SetOldLineVars() and GetInfoOC().
-// Found and fixed bad bug in StringsW.cpp in CDText(TPoint, TPoint, bool). I 
+// Found and fixed bad bug in StringsW.cpp in CDText(TPoint, TPoint, bool). I
 // noticed "cut" of text was leaving a line undeleted if you selected to the
 // very end of text. Fixed.
 //

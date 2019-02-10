@@ -11,7 +11,7 @@
 //
 // Refer to KeyGen.doc in the KeyGen project directory
 //
-// Dates earlier than 1980 are not in Windows XP Calendar
+// Dates earlier than 1980 are not in Windows XP Calander
 // so we shave down today's date to fit in 4-digit, Base36
 // (range is 0-1,679,615)
 //
@@ -245,7 +245,7 @@ void __fastcall TLicenseKey::WriteStub( String StubKey,
     // "Thank You for trying my software!", //16
     utils->ShowMessageU(KEYSTRINGS[16]); // Key stored + activated...
   else // bad stub-key write...
-    // "Invalid License Key...\n"
+    // "Invalid Licence Key...\n"
     // "Operating in Restricted Mode, Some Features Unavailable...", //17
     utils->ShowMessageU(KEYSTRINGS[17]);
 }
@@ -647,7 +647,7 @@ void __fastcall TLicenseKey::ErrorCode(int Code)
   else if (Code == -7)
     // "Your activation has expired.\n"
     utils->ShowMessageU(KEYSTRINGS[9] +
-        DTSColor->Iftf->Strings[INFO_WEB_SITE] + KEYSTRINGS[10]);
+        DTSColor->Iftf->GetString(INFO_WEB_SITE) + KEYSTRINGS[10]);
   else if (Code == -8)
     // "You must enter the E-mail address\n"
     // "you used when requesting your License Key!"
@@ -661,7 +661,7 @@ void __fastcall TLicenseKey::ErrorCode(int Code)
     // "the last time you used YahCoLoRiZe.  You will need to\n"
     // "re-install the license key! For information visit:\n\n"
     utils->ShowMessageU(KEYSTRINGS[13] +
-        DTSColor->Iftf->Strings[INFO_WEB_SITE]);
+        DTSColor->Iftf->GetString(INFO_WEB_SITE));
 #if ERROR_MESSAGES
   else
     ShowMessage("License Key Validation Failed: " + String(Code));
@@ -744,7 +744,7 @@ int __fastcall TLicenseKey::WriteKey(String Key)
 int __fastcall TLicenseKey::GetActivationDays(int ActMode)
 // ActMode range is 0-31
 //
-// The least significant two bits are flags...
+// The least signifigant two bits are flags...
 // .. bit 0 if set means "ignore E-Mail"
 // .. bit 1 is reserved and should be 0
 {
@@ -784,8 +784,9 @@ int __fastcall TLicenseKey::StoreProductKey(String Key)
       // "of said damages.\n\n"
       // "If you AGREE, press Yes, otherwise, press No.", //14
       int button =
-        MessageBox(NULL, utils->Utf8ToWide(KEYSTRINGS[14]).c_bstr(),
-            L"License", MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2|MB_APPLMODAL);
+        MessageBox(NULL, (char *)KEYSTRINGS[14],
+            "License",
+                MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2|MB_APPLMODAL);
 
       if (button == IDNO) return -201;
     }
@@ -979,7 +980,7 @@ String __fastcall TLicenseKey::EncodeBase36(int N, int Len)
 
   for (int ii = Len-1 ; ii >= 0 ; ii--)
   {
-    Div = pow((double)36,ii);
+    Div = pow(36,ii);
 
     Out = N/Div;
 
@@ -1008,7 +1009,7 @@ int __fastcall TLicenseKey::DecodeBase36(String S)
     else // 0-9
       S[ii] -= (char)48;
 
-    Acc += S[ii] * pow((double)36,S.Length()-ii);
+    Acc += S[ii] * pow(36,S.Length()-ii);
   }
 
   return(Acc);
